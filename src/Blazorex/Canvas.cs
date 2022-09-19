@@ -29,12 +29,22 @@ namespace Blazorex
 
             await JSRuntime.InvokeVoidAsync("import", "./_content/Blazorex/blazorex.js");
 
-            await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", _id);
+            var managedInstance = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", _id, managedInstance);
 
             var context = new RenderContext2D(_id, this.JSRuntime as IJSUnmarshalledRuntime);
 
             await this.OnCanvasReady.InvokeAsync(context);
         }
+
+        [JSInvokable()]
+        public async ValueTask __BlazorexGameLoop(float timeStamp)
+        {
+            await this.OnFrameReady.InvokeAsync(timeStamp);
+        }
+
+        [Parameter]
+        public EventCallback<float> OnFrameReady { get; set; }
 
         [Parameter]
         public EventCallback<IRenderContext> OnCanvasReady { get; set; }

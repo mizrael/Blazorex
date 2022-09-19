@@ -1,15 +1,17 @@
 window.Blazorex = (() => {
-    const _canvases = [],
-        _contexts = [],
+    const _contexts = [],
         _refs = [];
 
-    const initCanvas = (id) => {
+    const initCanvas = (id, managedInstance) => {
         const canvas = document.getElementById(id);
         if (!canvas) {
             return;
         }
-        _canvases[id] = canvas;
-        _contexts[id] = canvas.getContext("2d");
+        _contexts[id] = {
+            id: id,
+            context: canvas.getContext("2d"),
+            managedInstance
+        };
     }, getRef = (ref) => {
         const pId = `_bl_${ref.id}`,
             elem = _refs[pId] || document.querySelector(`[${pId}]`);
@@ -17,7 +19,7 @@ window.Blazorex = (() => {
         return elem;
     }, callCanvasMethod = (rawCtxId, rawMethod, rawParams) => {
         const ctxId = BINDING.conv_string(rawCtxId),
-            ctx = _contexts[ctxId];
+            ctx = _contexts[ctxId].context;
         if (!ctx) {
             return;
         }
@@ -34,7 +36,7 @@ window.Blazorex = (() => {
         ctx[method](...params);
     }, setCanvasProperty = (rawCtxId, rawProp, rawValue) => {
         const ctxId = BINDING.conv_string(rawCtxId),
-            ctx = _contexts[ctxId];
+            ctx = _contexts[ctxId].context;
         if (!ctx) {
             return;
         }
@@ -42,11 +44,20 @@ window.Blazorex = (() => {
             jsonValue = BINDING.conv_string(rawValue);
 
         ctx[property] = jsonValue;
+    },
+    onFrameUpdate = (timeStamp) => {
+        for (let ctx in _contexts) {
+            _contexts[ctx].managedInstance.invokeMethodAsync('__BlazorexGameLoop', timeStamp);
+        }
+        window.requestAnimationFrame(onFrameUpdate);
     };
 
     return {
         initCanvas,
         callCanvasMethod,
-        setCanvasProperty
+        setCanvasProperty,
+        onFrameUpdate
     };
 })();
+
+window.requestAnimationFrame(Blazorex.onFrameUpdate);

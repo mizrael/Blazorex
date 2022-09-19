@@ -1,24 +1,58 @@
 ﻿@page "/"
 
-<img @ref="_spritesheet" hidden src="icon-192.png" />
+<img @ref="_spritesheet" hidden src="blazor.png" />
 
 <Canvas Width="_width" Height="_height" 
+        OnFrameReady="(t) => OnFrameReady(t)"
         OnCanvasReady="(ctx) => OnCanvasReady(ctx)" />
 
 @code
 {
     ElementReference _spritesheet;
+    IRenderContext _context;
 
     int _width = 800;
     int _height = 600;
 
+    float _x = 400;
+    float _y = 300;
+
+    float _dx = 1;
+    float _dy = 1;
+    float _spriteSpeed = 0.25f;
+    float _spriteMaxSpeed = 5f;
+
+    float _spriteWidth = 200;
+    float _spriteHeight = 200;
+
+    float _lastUpdate = 0;
+    float _elapsedTime = 0;
+
     private void OnCanvasReady(IRenderContext context)
     {
-        context.ClearRect(0, 0, _width, _height);
+        _context = context;
+    }
 
-        context.SetFillStyle("red");
-        context.FillRect(0, 0, _width, _height);
+    private void OnFrameReady(float timeStamp)
+    {
+        _elapsedTime = timeStamp - _lastUpdate;
+        _lastUpdate = timeStamp;
 
-        context.DrawImage(_spritesheet, _width / 2, _height / 2);
+        if (_x + _spriteWidth >= _width || _x < 0)
+            _dx = -_dx;
+
+        if (_y + _spriteHeight >= _height || _y < 0)
+            _dy = -_dy;
+
+        var speed = Math.Clamp(_spriteSpeed * _elapsedTime, 0, _spriteMaxSpeed);
+        _x += _dx * speed;
+        _y += _dy * speed;
+
+        _context.ClearRect(0, 0, _width, _height);
+
+        _context.SetFillStyle("green");
+        _context.FillRect(0, 0, _width, _height);
+
+        _context.DrawImage(_spritesheet, _x, _y);
     }
 }
