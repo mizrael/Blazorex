@@ -1,0 +1,32 @@
+name: NuGet Generation
+
+on:
+  workflow_dispatch:
+  release:
+    types: 
+      - prereleased
+      - released
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+    name: Update NuGet packages
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Setup .NET Core @ Latest
+        uses: actions/setup-dotnet@v1        
+        with:
+            dotnet-version: '6.0.x'
+
+      - name: Generate NuGet packages
+        run: dotnet pack -c Release
+
+      - name: Push packages to registry
+        run: |
+          cd ./packages
+          dotnet nuget push "*.nupkg" -k ${NUGET_API_KEY} -s https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}        
