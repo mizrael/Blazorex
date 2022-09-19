@@ -1,0 +1,23 @@
+﻿@page "/"
+
+<img @ref="_spritesheet" hidden src="icon-192.png" />
+
+<Canvas Width="_width" Height="_height" OnCanvasReady="(ctx) => OnCanvasReady(ctx)" />
+
+@code
+{
+    ElementReference _spritesheet;
+
+    int _width = 800;
+    int _height = 600;
+
+    private void OnCanvasReady(IRenderContext context)
+    {
+        context.ClearRect(0, 0, _width, _height);
+
+        context.SetFillStyle("red");
+        context.FillRect(0, 0, _width, _height);
+
+        context.DrawImage(_spritesheet, _width / 2, _height / 2);
+    }
+}
