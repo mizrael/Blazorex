@@ -22,7 +22,7 @@ jobs:
             dotnet-version: '6.0.x'
 
       - name: Generate NuGet packages
-        run: dotnet pack -c Release
+        run: dotnet pack ./src/ -c Release
 
       - name: Push packages to registry
         run: |
