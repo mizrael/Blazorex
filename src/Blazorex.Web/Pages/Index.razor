@@ -50,9 +50,12 @@
 
         _context.ClearRect(0, 0, _width, _height);
 
-        _context.SetFillStyle("green");
+        _context.FillStyle = "green";
         _context.FillRect(0, 0, _width, _height);
 
+        _context.StrokeStyle = "rgb(255, 255,0)";
+        _context.LineWidth = 3;
+        _context.StrokeRect(_x, _y, _spriteWidth, _spriteHeight);
         _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);
     }
 }
