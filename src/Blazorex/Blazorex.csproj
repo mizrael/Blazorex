@@ -1,12 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
-
-
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<PackageVersion>0.0.1</PackageVersion>
+		<IsPackable>true</IsPackable>
+		<Authors>davidguida</Authors>
+		<Product>Blazorex</Product>
+		<NeutralLanguage>en-US</NeutralLanguage>
+		<Title>Blazorex</Title>
+		<PackageDescription>Blazorex is an HTML Canvas wrapper library for Blazor, written with .NET 6.</PackageDescription>
+		<Copyright>Copyright 2022</Copyright>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<PackageTags>blazor dotnet dotnet-core canvas gamedev</PackageTags>
+		<PackageOutputPath>../../packages/</PackageOutputPath>
+		<RepositoryUrl>https://github.com/mizrael/Blazorex/</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/mizrael/Blazorex/</PackageProjectUrl>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<IncludeSymbols>true</IncludeSymbols>
+		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
+		<PackageReadmeFile>readme.md</PackageReadmeFile>
+	</PropertyGroup>
+	
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
@@ -14,5 +30,16 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="6.0.9" />
   </ItemGroup>
+
+	<ItemGroup>
+		<None Include="../../readme.md" Pack="true" PackagePath="\">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+	</PropertyGroup>
+
 
 </Project>
