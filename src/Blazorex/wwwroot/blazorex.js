@@ -28,7 +28,7 @@ window.Blazorex = (() => {
             params = JSON.parse(jsonParams);
 
         for (let p in params) {
-            if (params[p].IsRef) {
+            if (params[p] != null && params[p].IsRef) {
                 params[p] = getRef(params[p]);
             }
         }

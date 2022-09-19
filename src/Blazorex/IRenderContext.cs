@@ -10,10 +10,13 @@ namespace Blazorex
 
         void DrawImage(ElementReference elementReference, double x, double y);
         void DrawImage(ElementReference imageRef, double x, double y, int imageWidth, int imageHeight);
-        
+
+        void StrokeText(string text, double x, double y, double? maxWidth = null);
+        void FillText(string text, double x, double y, double? maxWidth = null);
 
         string FillStyle { get; set; }
         string StrokeStyle { get; set; }
         int LineWidth { get; set; }
+        string Font { get; set; }
     }
 }

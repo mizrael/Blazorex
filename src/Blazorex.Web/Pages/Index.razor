@@ -57,5 +57,10 @@
         _context.LineWidth = 3;
         _context.StrokeRect(_x, _y, _spriteWidth, _spriteHeight);
         _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);
+
+        var fps = 1000f / _elapsedTime;
+        _context.Font = "24px verdana";
+        _context.FillStyle = "red";
+        _context.FillText($"FPS: {fps:###}", 20, 40);
     }
 }

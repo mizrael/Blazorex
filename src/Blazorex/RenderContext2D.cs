@@ -64,6 +64,22 @@ namespace Blazorex
             this.Call("drawImage", innerRef, x, y, imageWidth, imageHeight);
         }
 
+        public void StrokeText(string text, double x, double y, double? maxWidth = null)
+        {
+            if (maxWidth.HasValue)
+                this.Call("strokeText", text, x, y, maxWidth.Value);
+            else
+                this.Call("strokeText", text, x, y);
+        }
+
+        public void FillText(string text, double x, double y, double? maxWidth = null)
+        {
+            if (maxWidth.HasValue)
+                this.Call("fillText", text, x, y, maxWidth.Value);
+            else
+                this.Call("fillText", text, x, y);
+        }
+
         #endregion public methods
 
         #region properties
@@ -100,6 +116,18 @@ namespace Blazorex
                 this.SetProperty("lineWidth", value);
             }
         }
+
+        private string _font;
+        public string Font
+        {
+            get => _font;
+            set
+            {
+                _font = value;
+                this.SetProperty("font", value);
+            }
+        }
+
 
         #endregion properties
     }
