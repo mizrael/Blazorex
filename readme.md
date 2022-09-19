@@ -5,6 +5,9 @@ Blazorex is an HTML Canvas wrapper library for Blazor, written with .NET 6.
 
 ![Blazorex](sample.gif "Blazorex")
 
+## Installation
+Blazorex can be installed as Nuget package: https://www.nuget.org/packages/Blazorex/
+
 ## Usage
 
 Simply add the `Canvas` Component to your Razor page and register to the `OnCanvasReady` to receive the `IRenderContext` instance.

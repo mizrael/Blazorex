@@ -13,7 +13,7 @@ window.Blazorex = (() => {
             managedInstance
         };
     }, getRef = (ref) => {
-        const pId = `_bl_${ref.id}`,
+        const pId = `_bl_${ref.Id}`,
             elem = _refs[pId] || document.querySelector(`[${pId}]`);
         _refs[pId] = elem;
         return elem;
@@ -28,7 +28,7 @@ window.Blazorex = (() => {
             params = JSON.parse(jsonParams);
 
         for (let p in params) {
-            if (params[p].isRef) {
+            if (params[p].IsRef) {
                 params[p] = getRef(params[p]);
             }
         }

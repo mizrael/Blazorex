@@ -22,8 +22,8 @@
     float _spriteSpeed = 0.25f;
     float _spriteMaxSpeed = 5f;
 
-    float _spriteWidth = 200;
-    float _spriteHeight = 200;
+    int _spriteWidth = 200;
+    int _spriteHeight = 200;
 
     float _lastUpdate = 0;
     float _elapsedTime = 0;
@@ -53,6 +53,6 @@
         _context.SetFillStyle("green");
         _context.FillRect(0, 0, _width, _height);
 
-        _context.DrawImage(_spritesheet, _x, _y);
+        _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);
     }
 }

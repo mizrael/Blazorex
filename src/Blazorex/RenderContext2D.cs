@@ -42,8 +42,16 @@ namespace Blazorex
 
         public void DrawImage(ElementReference imageRef, double x, double y)
         {
-            var innerRef = new { id = imageRef.Id, isRef = true };
+            var innerRef = MarshalReference.Map(imageRef);
+
             this.Call("drawImage", innerRef, x, y);
+        }
+
+        public void DrawImage(ElementReference imageRef, double x, double y, int imageWidth, int imageHeight)
+        {
+            var innerRef = MarshalReference.Map(imageRef);
+
+            this.Call("drawImage", innerRef, x, y, imageWidth, imageHeight);
         }
 
         public void FillRect(int x, int y, int width, int height)
@@ -55,6 +63,5 @@ namespace Blazorex
         {
             this.SetProperty("fillStyle", value);
         }
-
     }
 }
