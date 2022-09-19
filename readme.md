@@ -35,4 +35,4 @@ Then use `OnFrameReady` to define your update/rendere logic:
 
 ```
 
-For a complete sample, check the [./src/Blazorex.Web](src\Blazorex.Web) folder.
+For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder.
