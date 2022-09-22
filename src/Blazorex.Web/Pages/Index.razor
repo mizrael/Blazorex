@@ -28,12 +28,51 @@
     float _lastUpdate = 0;
     float _elapsedTime = 0;
 
+    int renderTarget;
+    int rtWidth = 200;
+    int rtHeight = 80;
+    byte[] data;
+    byte[] fireData;
+
     private void OnCanvasReady(IRenderContext context)
     {
         _context = context;
+
+        renderTarget = _context.CreateImageData(rtWidth, rtHeight);
+        data = new byte[rtWidth * rtHeight * 4];
+        fireData = new byte[rtWidth * rtHeight];
     }
 
-    private void OnFrameReady(float timeStamp)
+    private void calculateFirePropagation()
+    {
+        for (int column = 0; column < rtWidth; column++)
+        {
+            for (int row = 0; row < rtHeight; row++)
+            {
+                int pixelIndex = column + (rtWidth * row);
+                updateFireIntensityPerPixel(pixelIndex);
+            }
+        }
+    }
+
+    private void updateFireIntensityPerPixel(int currentPixelIndex)
+    {
+        int belowPixelIndex = currentPixelIndex + rtWidth;
+        if (belowPixelIndex >= rtWidth * rtHeight)
+            return;
+
+        byte decay = (byte)(Math.Floor(Random.Shared.NextDouble() * 3));
+        byte oldValue = fireData[belowPixelIndex];
+        byte newValue = (byte)(oldValue - decay);
+        fireData[currentPixelIndex] = Math.Max((byte)0, newValue);
+
+        data[currentPixelIndex * 4] =
+            data[currentPixelIndex * 4 + 1] =
+            data[currentPixelIndex * 4 + 2] = fireData[currentPixelIndex];
+        data[currentPixelIndex * 4 + 3] = 255;
+    }
+
+    private void Update(float timeStamp)
     {
         _elapsedTime = timeStamp - _lastUpdate;
         _lastUpdate = timeStamp;
@@ -48,6 +87,11 @@
         _x += _dx * speed;
         _y += _dy * speed;
 
+        this.calculateFirePropagation();
+    }
+
+    private void Render()
+    {
         _context.ClearRect(0, 0, _width, _height);
 
         _context.FillStyle = "green";
@@ -62,5 +106,13 @@
         _context.Font = "24px verdana";
         _context.FillStyle = "red";
         _context.FillText($"FPS: {fps:###}", 20, 40);
+
+        _context.PutImageData(renderTarget, data, 10, 50);
+    }
+
+    private void OnFrameReady(float timeStamp)
+    {
+        this.Update(timeStamp);
+        this.Render();
     }
 }

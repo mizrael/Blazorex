@@ -14,6 +14,9 @@ namespace Blazorex
         void StrokeText(string text, double x, double y, double? maxWidth = null);
         void FillText(string text, double x, double y, double? maxWidth = null);
 
+        int CreateImageData(int width, int height);
+        void PutImageData(int imageDataId, byte[] data, double x, double y);
+
         string FillStyle { get; set; }
         string StrokeStyle { get; set; }
         int LineWidth { get; set; }

@@ -2,15 +2,17 @@
 using Microsoft.JSInterop;
 using System;
 using System.Text.Json;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Blazorex
 {
     internal class RenderContext2D : IRenderContext
     {
         private readonly string _id;
-        private readonly IJSUnmarshalledRuntime _jsRuntime;
+        private readonly IJSUnmarshalledRuntime _unmarshalledJsRuntime;
+        private readonly IJSInProcessRuntime _jsRuntime;
 
-        public RenderContext2D(string id, IJSUnmarshalledRuntime jsRuntime)
+        public RenderContext2D(string id, IJSRuntime jsRuntime)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -18,7 +20,8 @@ namespace Blazorex
             }
 
             _id = id;
-            _jsRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
+            _jsRuntime = (IJSInProcessRuntime)jsRuntime;
+            _unmarshalledJsRuntime = (IJSUnmarshalledRuntime)_jsRuntime;
         }
 
         #region private methods
@@ -27,14 +30,14 @@ namespace Blazorex
         {
             var jsonArgs = JsonSerializer.Serialize(args);
 
-            _jsRuntime.InvokeUnmarshalled<string, string, string, object>("Blazorex.callCanvasMethod", _id, method, jsonArgs);
+            _unmarshalledJsRuntime.InvokeUnmarshalled<string, string, string, object>("Blazorex.callCanvasMethod", _id, method, jsonArgs);
         }
 
         private void SetProperty(string property, object value)
         {
             string strVal = (value != null) ? value.ToString() : string.Empty;
 
-            _jsRuntime.InvokeUnmarshalled<string, string, string, object>("Blazorex.setCanvasProperty", _id, property, strVal);
+            _unmarshalledJsRuntime.InvokeUnmarshalled<string, string, string, object>("Blazorex.setCanvasProperty", _id, property, strVal);
         }
 
         #endregion private methods
@@ -79,6 +82,13 @@ namespace Blazorex
             else
                 this.Call("fillText", text, x, y);
         }
+
+        public int CreateImageData(int width, int height) 
+            => _jsRuntime.Invoke<int>("Blazorex.createImageData", _id, width, height);
+
+        public void PutImageData(int imageDataId, byte[] data, double x, double y)        
+            => _jsRuntime.InvokeVoid("Blazorex.putImageData", _id, imageDataId, data, x, y);
+        
 
         #endregion public methods
 

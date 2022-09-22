@@ -1,6 +1,7 @@
 window.Blazorex = (() => {
     const _contexts = [],
-        _refs = [];
+        _refs = [],
+        _imageDatas = [];
 
     const initCanvas = (id, managedInstance) => {
         const canvas = document.getElementById(id);
@@ -44,8 +45,18 @@ window.Blazorex = (() => {
             jsonValue = BINDING.conv_string(rawValue);
 
         ctx[property] = jsonValue;
-    },
-    onFrameUpdate = (timeStamp) => {
+    }, createImageData = (ctxId, width, height) => {
+        const ctx = _contexts[ctxId].context,
+            imageData = ctx.createImageData(width, height);
+        _imageDatas[_imageDatas.length] = imageData;
+        return _imageDatas.length - 1;
+    }, putImageData = (ctxId, imageId, data, x, y) => {
+        const ctx = _contexts[ctxId].context,
+            imageData = _imageDatas[imageId];
+        for (let i = 0; i != data.length;i++)
+            imageData.data[i] = data[i];
+        ctx.putImageData(imageData, x, y);
+    }, onFrameUpdate = (timeStamp) => {
         for (let ctx in _contexts) {
             _contexts[ctx].managedInstance.invokeMethodAsync('__BlazorexGameLoop', timeStamp);
         }
@@ -56,6 +67,8 @@ window.Blazorex = (() => {
         initCanvas,
         callCanvasMethod,
         setCanvasProperty,
+        createImageData,
+        putImageData,
         onFrameUpdate
     };
 })();
