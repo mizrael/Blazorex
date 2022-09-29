@@ -17,16 +17,7 @@ window.Blazorex = (() => {
             elem = _refs[pId] || document.querySelector(`[${pId}]`);
         _refs[pId] = elem;
         return elem;
-    }, callCanvasMethod = (rawCtxId, rawMethod, rawParams) => {
-        const ctxId = BINDING.conv_string(rawCtxId),
-            ctx = _contexts[ctxId].context;
-        if (!ctx) {
-            return;
-        }
-        const method = BINDING.conv_string(rawMethod),
-            jsonParams = BINDING.conv_string(rawParams),
-            params = JSON.parse(jsonParams);
-
+    }, callMethod = (ctx, method, params) => {
         for (let p in params) {
             if (params[p] != null && params[p].IsRef) {
                 params[p] = getRef(params[p]);
@@ -34,29 +25,38 @@ window.Blazorex = (() => {
         }
 
         ctx[method](...params);
-    }, setCanvasProperty = (rawCtxId, rawProp, rawValue) => {
-        const ctxId = BINDING.conv_string(rawCtxId),
-            ctx = _contexts[ctxId].context;
-        if (!ctx) {
-            return;
-        }
-        const property = BINDING.conv_string(rawProp),
-            jsonValue = BINDING.conv_string(rawValue);
-
-        ctx[property] = jsonValue;
+    },
+    setProperty = (ctx, property, value) => {
+        ctx[property] = value;
     },
     onFrameUpdate = (timeStamp) => {
         for (let ctx in _contexts) {
             _contexts[ctx].managedInstance.invokeMethodAsync('__BlazorexGameLoop', timeStamp);
         }
         window.requestAnimationFrame(onFrameUpdate);
+    },
+    processBatch = (rawCtxId, rawBatch) => {
+        const ctxId = BINDING.conv_string(rawCtxId),
+            ctx = _contexts[ctxId].context;
+        if (!ctx) {
+            return;
+        }
+        const jsonBatch = BINDING.conv_string(rawBatch),
+            batch = JSON.parse(jsonBatch);
+
+        for (let i in batch) {
+            const op = batch[i];
+            if (op.IsProperty)
+                setProperty(ctx, op.MethodName, op.Args);
+            else
+                callMethod(ctx, op.MethodName, op.Args);
+        }
     };
 
     return {
         initCanvas,
-        callCanvasMethod,
-        setCanvasProperty,
-        onFrameUpdate
+        onFrameUpdate,
+        processBatch
     };
 })();
 

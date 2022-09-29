@@ -10,7 +10,8 @@ namespace Blazorex
     public class Canvas : ComponentBase
     {
         private readonly string _id = Guid.NewGuid().ToString();
-             
+        private RenderContext2D _context;     
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             int seq = 0;
@@ -32,15 +33,16 @@ namespace Blazorex
             var managedInstance = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", _id, managedInstance);
 
-            var context = new RenderContext2D(_id, this.JSRuntime as IJSUnmarshalledRuntime);
+            _context = new RenderContext2D(_id, this.JSRuntime as IJSUnmarshalledRuntime);
 
-            await this.OnCanvasReady.InvokeAsync(context);
+            await this.OnCanvasReady.InvokeAsync(_context);
         }
 
         [JSInvokable()]
         public async ValueTask __BlazorexGameLoop(float timeStamp)
         {
             await this.OnFrameReady.InvokeAsync(timeStamp);
+            _context.ProcessBatch();
         }
 
         [Parameter]

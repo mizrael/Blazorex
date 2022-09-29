@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace Blazorex
@@ -9,6 +10,8 @@ namespace Blazorex
     {
         private readonly string _id;
         private readonly IJSUnmarshalledRuntime _jsRuntime;
+
+        private readonly Queue<JsOps> _jsOps = new();
 
         public RenderContext2D(string id, IJSUnmarshalledRuntime jsRuntime)
         {
@@ -24,22 +27,21 @@ namespace Blazorex
         #region private methods
 
         private void Call(string method, params object[] args)
-        {
-            var jsonArgs = JsonSerializer.Serialize(args);
-
-            _jsRuntime.InvokeUnmarshalled<string, string, string, object>("Blazorex.callCanvasMethod", _id, method, jsonArgs);
-        }
+            => _jsOps.Enqueue(new JsOps(method, args, false));
 
         private void SetProperty(string property, object value)
-        {
-            string strVal = (value != null) ? value.ToString() : string.Empty;
-
-            _jsRuntime.InvokeUnmarshalled<string, string, string, object>("Blazorex.setCanvasProperty", _id, property, strVal);
-        }
+            => _jsOps.Enqueue(new JsOps(property, value, true));
 
         #endregion private methods
 
         #region public methods
+
+        internal void ProcessBatch()
+        {
+            var payload = JsonSerializer.Serialize(_jsOps);
+            _jsOps.Clear();
+            _jsRuntime.InvokeUnmarshalled<string, string, object>("Blazorex.processBatch", _id, payload);
+        }
 
         public void ClearRect(int x, int y, int width, int height)
             => this.Call("clearRect", x, y, width, height);
