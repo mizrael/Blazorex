@@ -34,7 +34,7 @@ namespace Blazorex
             await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", _id, managedInstance);
 
             _context = new RenderContext2D(_id, this.JSRuntime as IJSUnmarshalledRuntime);
-
+                        
             await this.OnCanvasReady.InvokeAsync(_context);
         }
 

@@ -35,4 +35,12 @@ Then use `OnFrameReady` to define your update/rendere logic:
 
 ```
 
+You might also need to update your `index.html` to include the library's CSS:
+```html
+<head>
+    <!-- other tags... -->
+    <link href="_content/Blazorex/blazorex.css" rel="stylesheet" />
+</head>
+```
+
 For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder.

@@ -1,6 +1,7 @@
 window.Blazorex = (() => {
     const _contexts = [],
-        _refs = [];
+        _refs = [],
+        _patterns = [];
 
     const initCanvas = (id, managedInstance) => {
         const canvas = document.getElementById(id);
@@ -24,10 +25,12 @@ window.Blazorex = (() => {
             }
         }
 
-        ctx[method](...params);
+        const result = ctx[method](...params);
+        return result;
     },
     setProperty = (ctx, property, value) => {
-        ctx[property] = value;
+        const propValue = (property == 'fillStyle' ? _patterns[value] || value : value);
+        ctx[property] = propValue;
     },
     onFrameUpdate = (timeStamp) => {
         for (let ctx in _contexts) {
@@ -51,12 +54,32 @@ window.Blazorex = (() => {
             else
                 callMethod(ctx, op.MethodName, op.Args);
         }
+    },
+    directCall = (rawCtxId, rawMethodName, rawParams) => {
+        const ctxId = BINDING.conv_string(rawCtxId),
+            ctx = _contexts[ctxId].context;
+        if (!ctx) {
+            return;
+        }
+        const methodName = BINDING.conv_string(rawMethodName),
+            jParams = BINDING.conv_string(rawParams),
+            params = JSON.parse(jParams),
+            result = callMethod(ctx, methodName, params);            
+
+        if (methodName == 'createPattern') {
+            const patternId = _patterns.length;
+            _patterns.push(result);
+            return BINDING.js_to_mono_obj(patternId);
+        }
+
+        return BINDING.js_to_mono_obj(result);
     };
 
     return {
         initCanvas,
         onFrameUpdate,
-        processBatch
+        processBatch,
+        directCall
     };
 })();
 

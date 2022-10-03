@@ -1,0 +1,11 @@
+﻿@inherits CanvasManagerBase
+
+<div class="blazorex-canvases">
+    @foreach (var (name, options) in _names)
+    {
+        <div id="@(name)Container" class="blazorex-canvas-container" hidden="@options.Hidden">
+            <Canvas @ref="_canvases[name]" OnCanvasReady="@options.OnCanvasReady"
+                    Width="@options.Width" Height="@options.Heigth" />
+        </div>
+    }
+</div> 

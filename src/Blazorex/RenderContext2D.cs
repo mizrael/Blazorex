@@ -43,30 +43,55 @@ namespace Blazorex
             _jsRuntime.InvokeUnmarshalled<string, string, object>("Blazorex.processBatch", _id, payload);
         }
 
-        public void ClearRect(int x, int y, int width, int height)
+        internal T DirectCall<T>(string method, params object[] args)
+        {
+            var payload = string.Empty;
+            if(args is not null && args.Length != 0)
+                payload = JsonSerializer.Serialize(args);
+            var result = _jsRuntime.InvokeUnmarshalled<string, string, string, T>("Blazorex.directCall", _id, method, payload);
+            return result;
+        }
+
+        public void ClearRect(float x, float y, float width, float height)
             => this.Call("clearRect", x, y, width, height);
 
-        public void StrokeRect(double x, double y, double width, double height)
+        public void StrokeRect(float x, float y, float width, float height)
              => this.Call("strokeRect", x, y, width, height);
 
-        public void FillRect(int x, int y, int width, int height)
+        public void FillRect(float x, float y, float width, float height)
             => this.Call("fillRect", x, y, width, height);
 
-        public void DrawImage(ElementReference imageRef, double x, double y)
+        public object CreatePattern(ElementReference imageRef, RepeatPattern pattern)
+        {
+            var innerRef = MarshalReference.Map(imageRef);
+            return DirectCall<object>("createPattern", innerRef, pattern.Value);
+        }
+
+        public void DrawImage(ElementReference imageRef, float x, float y)
         {
             var innerRef = MarshalReference.Map(imageRef);
 
             this.Call("drawImage", innerRef, x, y);
         }
 
-        public void DrawImage(ElementReference imageRef, double x, double y, int imageWidth, int imageHeight)
+        public void DrawImage(ElementReference imageRef, float x, float y, float imageWidth, float imageHeight)
         {
             var innerRef = MarshalReference.Map(imageRef);
 
             this.Call("drawImage", innerRef, x, y, imageWidth, imageHeight);
         }
 
-        public void StrokeText(string text, double x, double y, double? maxWidth = null)
+        public void DrawImage(ElementReference imageRef,
+              float sourceX, float sourceY, float sourceWidth, float sourceHeight,
+              float destX, float destY, float destWidth, float destHeight)
+        {
+            var innerRef = MarshalReference.Map(imageRef);
+
+            this.Call("drawImage", innerRef, sourceX, sourceY, sourceWidth, sourceHeight,
+                                            destX, destY, destWidth, destHeight);
+        }
+
+        public void StrokeText(string text, float x, float y, float? maxWidth = null)
         {
             if (maxWidth.HasValue)
                 this.Call("strokeText", text, x, y, maxWidth.Value);
@@ -74,7 +99,7 @@ namespace Blazorex
                 this.Call("strokeText", text, x, y);
         }
 
-        public void FillText(string text, double x, double y, double? maxWidth = null)
+        public void FillText(string text, float x, float y, float? maxWidth = null)
         {
             if (maxWidth.HasValue)
                 this.Call("fillText", text, x, y, maxWidth.Value);
@@ -82,12 +107,32 @@ namespace Blazorex
                 this.Call("fillText", text, x, y);
         }
 
+        public TextMetrics MeasureText(string text)
+            => DirectCall<TextMetrics>("measureText", text);
+
+        public void Translate(float x, float y)
+            => this.Call("translate", x, y);
+        
+        public void Rotate(float angle)
+            => this.Call("rotate", angle);
+
+        public void Scale(float x, float y)
+            => this.Call("scale", x, y);
+
+        public void BeginPath()
+            => this.Call("beginPath");
+
+        public void Save()
+            => this.Call("save");
+        public void Restore()
+            => this.Call("restore");
+
         #endregion public methods
 
         #region properties
 
-        private string _fillStyle;
-        public string FillStyle
+        private object _fillStyle;
+        public object FillStyle
         {
             get => _fillStyle;
             set
@@ -127,6 +172,17 @@ namespace Blazorex
             {
                 _font = value;
                 this.SetProperty("font", value);
+            }
+        }
+
+        private TextAlign _textAlign;
+        public TextAlign TextAlign
+        {
+            get => _textAlign;
+            set
+            {
+                _textAlign = value;
+                this.SetProperty("textAlign", value.Value);
             }
         }
 
