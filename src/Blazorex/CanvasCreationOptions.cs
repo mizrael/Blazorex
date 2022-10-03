@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Components;
+using System;
 
 namespace Blazorex
 {
@@ -8,13 +9,10 @@ namespace Blazorex
         public int Width { get; init; }
         public int Heigth { get; init; }
         public Action<IRenderContext> OnCanvasReady { get; init; }
+        public Action<float> OnFrameReady { get; init; }
 
-        public CanvasCreationOptions(bool hidden, int width, int heigth, Action<IRenderContext> onCanvasReady)
-        {
-            Hidden = hidden;
-            Width = width;
-            Heigth = heigth;
-            OnCanvasReady = onCanvasReady;
-        }
+        public Action<int> OnKeyUp { get; init; }
+        public Action<int> OnKeyDown { get; init; }
+        public Action<MouseCoords> OnMouseMove { get; init; }
     }
 }

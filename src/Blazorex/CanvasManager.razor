@@ -4,7 +4,12 @@
     @foreach (var (name, options) in _names)
     {
         <div id="@(name)Container" class="blazorex-canvas-container" hidden="@options.Hidden">
-            <Canvas @ref="_canvases[name]" OnCanvasReady="@options.OnCanvasReady"
+            <Canvas @ref="_canvases[name]" 
+                    OnCanvasReady="@options.OnCanvasReady"
+                    OnFrameReady="@options.OnFrameReady"
+                    OnMouseMove="@options.OnMouseMove"
+                    OnKeyDown="@options.OnKeyDown"
+                    OnKeyUp="@options.OnKeyUp"
                     Width="@options.Width" Height="@options.Heigth" />
         </div>
     }

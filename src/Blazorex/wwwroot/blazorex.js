@@ -8,6 +8,9 @@ window.Blazorex = (() => {
         if (!canvas) {
             return;
         }
+
+
+
         _contexts[id] = {
             id: id,
             context: canvas.getContext("2d"),
@@ -34,7 +37,7 @@ window.Blazorex = (() => {
     },
     onFrameUpdate = (timeStamp) => {
         for (let ctx in _contexts) {
-            _contexts[ctx].managedInstance.invokeMethodAsync('__BlazorexGameLoop', timeStamp);
+            _contexts[ctx].managedInstance.invokeMethodAsync('UpdateFrame', timeStamp);
         }
         window.requestAnimationFrame(onFrameUpdate);
     },
@@ -73,6 +76,26 @@ window.Blazorex = (() => {
         }
 
         return BINDING.js_to_mono_obj(result);
+    };
+
+    window.onkeyup = (e) => {
+        for (let ctx in _contexts) {
+            _contexts[ctx].managedInstance.invokeMethodAsync('KeyReleased', e.keyCode);
+        }
+    };
+    window.onkeydown = (e) => {
+        for (let ctx in _contexts) {
+            _contexts[ctx].managedInstance.invokeMethodAsync('KeyPressed', e.keyCode);
+        }
+    };
+    window.onmousemove = (e) => {
+        const coords = {
+            X: e.offsetX,
+            Y: e.offsetY
+        };
+        for (let ctx in _contexts) {
+            _contexts[ctx].managedInstance.invokeMethodAsync('MouseMoved', coords);
+        }
     };
 
     return {

@@ -38,18 +38,53 @@ namespace Blazorex
             await this.OnCanvasReady.InvokeAsync(_context);
         }
 
-        [JSInvokable()]
-        public async ValueTask __BlazorexGameLoop(float timeStamp)
+        #region js interop
+
+        [JSInvokable]
+        public async ValueTask UpdateFrame(float timeStamp)
         {
             await this.OnFrameReady.InvokeAsync(timeStamp);
             _context.ProcessBatch();
         }
+
+        [JSInvokable]
+        public async ValueTask KeyPressed(int keyCode)
+        {
+            await this.OnKeyDown.InvokeAsync(keyCode);
+        }
+
+        [JSInvokable]
+        public async ValueTask KeyReleased(int keyCode)
+        {
+            await this.OnKeyUp.InvokeAsync(keyCode);
+        }
+
+        [JSInvokable]
+        public async ValueTask MouseMoved(MouseCoords coords)
+        {
+            await this.OnMouseMove.InvokeAsync(coords);
+        }
+
+        #endregion js interop
+
+        #region Event Callbacks
+
+        [Parameter]
+        public EventCallback<int> OnKeyUp { get; set; }
+
+        [Parameter]
+        public EventCallback<int> OnKeyDown { get; set; }
+
+        [Parameter]
+        public EventCallback<MouseCoords> OnMouseMove { get; set; }
 
         [Parameter]
         public EventCallback<float> OnFrameReady { get; set; }
 
         [Parameter]
         public EventCallback<IRenderContext> OnCanvasReady { get; set; }
+
+        #endregion Event Callbacks
 
         #region properties
 
@@ -63,5 +98,11 @@ namespace Blazorex
         public int Height { get; set; } = 600;
 
         #endregion properties
+    }
+
+    public readonly struct MouseCoords
+    {
+        public readonly int X;
+        public readonly int Y;
     }
 }
