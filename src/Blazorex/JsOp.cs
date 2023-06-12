@@ -2,7 +2,7 @@
 
 namespace Blazorex
 {
-    internal readonly struct JsOps
+    internal readonly struct JsOp
     {
         [JsonInclude]
         public readonly bool IsProperty;
@@ -13,11 +13,17 @@ namespace Blazorex
         [JsonInclude]
         public readonly object Args;
 
-        public JsOps(string methodName, object args, bool isProperty) : this()
+        private JsOp(string methodName, object args, bool isProperty) : this()
         {
             MethodName = methodName;
             Args = args;
             IsProperty = isProperty;
         }        
+
+        public static JsOp FunctionCall(string methodName, object args)
+            => new(methodName, args, false);
+
+        public static JsOp PropertyCall(string propertyName, object args)
+            => new(propertyName, args, true);
     }
 }

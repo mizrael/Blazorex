@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace Blazorex
 {
-
     public class Canvas : ComponentBase
     {
         private readonly string _id = Guid.NewGuid().ToString();
@@ -33,7 +32,7 @@ namespace Blazorex
             var managedInstance = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", _id, managedInstance);
 
-            _context = new RenderContext2D(_id, this.JSRuntime as IJSUnmarshalledRuntime);
+            _context = new RenderContext2D(_id, this.JSRuntime as IJSInProcessRuntime);
                         
             await this.OnCanvasReady.InvokeAsync(_context);
         }

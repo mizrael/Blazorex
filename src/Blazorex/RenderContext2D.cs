@@ -9,11 +9,11 @@ namespace Blazorex
     internal class RenderContext2D : IRenderContext
     {
         private readonly string _id;
-        private readonly IJSUnmarshalledRuntime _jsRuntime;
+        private readonly IJSInProcessRuntime _jsRuntime;
 
-        private readonly Queue<JsOps> _jsOps = new();
+        private readonly Queue<JsOp> _jsOps = new();
 
-        public RenderContext2D(string id, IJSUnmarshalledRuntime jsRuntime)
+        public RenderContext2D(string id, IJSInProcessRuntime jsRuntime)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -27,10 +27,10 @@ namespace Blazorex
         #region private methods
 
         private void Call(string method, params object[] args)
-            => _jsOps.Enqueue(new JsOps(method, args, false));
+            => _jsOps.Enqueue(JsOp.FunctionCall(method, args));
 
         private void SetProperty(string property, object value)
-            => _jsOps.Enqueue(new JsOps(property, value, true));
+            => _jsOps.Enqueue(JsOp.PropertyCall(property, value));
 
         #endregion private methods
 
@@ -40,7 +40,7 @@ namespace Blazorex
         {
             var payload = JsonSerializer.Serialize(_jsOps);
             _jsOps.Clear();
-            _jsRuntime.InvokeUnmarshalled<string, string, object>("Blazorex.processBatch", _id, payload);
+            _jsRuntime.InvokeVoid("Blazorex.processBatch", _id, payload);
         }
 
         internal T DirectCall<T>(string method, params object[] args)
@@ -48,7 +48,7 @@ namespace Blazorex
             var payload = string.Empty;
             if(args is not null && args.Length != 0)
                 payload = JsonSerializer.Serialize(args);
-            var result = _jsRuntime.InvokeUnmarshalled<string, string, string, T>("Blazorex.directCall", _id, method, payload);
+            var result = _jsRuntime.Invoke<T>("Blazorex.directCall", _id, method, payload);
             return result;
         }
 

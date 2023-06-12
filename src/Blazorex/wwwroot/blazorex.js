@@ -9,8 +9,6 @@ window.Blazorex = (() => {
             return;
         }
 
-
-
         _contexts[id] = {
             id: id,
             context: canvas.getContext("2d"),
@@ -41,17 +39,14 @@ window.Blazorex = (() => {
         }
         window.requestAnimationFrame(onFrameUpdate);
     },
-    processBatch = (rawCtxId, rawBatch) => {
-        const ctxId = BINDING.conv_string(rawCtxId),
-            ctx = _contexts[ctxId].context;
+    processBatch = (ctxId, jsonBatch) => {
+        const ctx = _contexts[ctxId].context;
         if (!ctx) {
             return;
         }
-        const jsonBatch = BINDING.conv_string(rawBatch),
-            batch = JSON.parse(jsonBatch);
+        const batch = JSON.parse(jsonBatch);
 
-        for (let i in batch) {
-            const op = batch[i];
+        for (const op of batch) {
             if (op.IsProperty)
                 setProperty(ctx, op.MethodName, op.Args);
             else

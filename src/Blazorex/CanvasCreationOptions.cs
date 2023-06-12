@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Components;
-using System;
+﻿using System;
 
 namespace Blazorex
 {
-    public struct CanvasCreationOptions
+    public readonly struct CanvasCreationOptions
     {
         public bool Hidden { get; init; }
         public int Width { get; init; }
