@@ -3,7 +3,7 @@
 ## Description
 Blazorex is an HTML Canvas wrapper library for Blazor, written with .NET 6.
 
-![Blazorex](sample.gif "Blazorex")
+![Blazorex](https://raw.githubusercontent.com/mizrael/Blazorex/master/sample.gif "Blazorex")
 
 ## Installation
 Blazorex can be installed as Nuget package: https://www.nuget.org/packages/Blazorex/
@@ -35,4 +35,14 @@ Then use `OnFrameReady` to define your update/rendere logic:
 
 ```
 
+You might also need to update your `index.html` to include the library's CSS:
+```html
+<head>
+    <!-- other tags... -->
+    <link href="_content/Blazorex/blazorex.css" rel="stylesheet" />
+</head>
+```
+
 For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder.
+
+A sample game can be found here: [Blazeroids](https://github.com/mizrael/Blazeroids)
