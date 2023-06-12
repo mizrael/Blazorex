@@ -29,13 +29,16 @@
     float _elapsedTime = 0;
 
     int renderTarget;
-    int rtWidth = 0;
-    int rtHeight = 0;
+    int fireWidth = 300;
+    int fireHeight = 100;
     byte fireStartIntensity = 36;
-    byte[] data;
+    byte[] fireColorData;
     byte[] fireData;
 
-    public record Color(byte r, byte g, byte b);
+    public record Color(byte r, byte g, byte b)
+    {
+        public readonly static Color White = new Color(255, 255, 255);
+    }
 
     Color[] palette = new Color[] {
         new Color(r:7, g:7, b:7), new Color(r:31,g:7,b:7),new Color(r:47,g:15,b:7),new Color(r:71,g:15,b:7),new Color(r:87,g:23,b:7),new Color(r:103,g:31,b:7),new Color(r:119,g:31,b:7),new Color(r:143,g:39,b:7),new Color(r:159,g:47,b:7),new Color(r:175,g:63,b:7),new Color(r:191,g:71,b:7),new Color(r:199,g:71,b:7),new Color(r:223,g:79,b:7),new Color(r:223,g:87,b:7),new Color(r:223,g:87,b:7),new Color(r:215,g:95,b:7),new Color(r:215,g:95,b:7),new Color(r:215,g:103,b:15),new Color(r:207,g:111,b:15),new Color(r:207,g:119,b:15),new Color(r:207,g:127,b:15),new Color(r:207,g:135,b:23),new Color(r:199,g:135,b:23),new Color(r:199,g:143,b:23),new Color(r:199,g:151,b:31),new Color(r:191,g:159,b:31),new Color(r:191,g:159,b:31),new Color(r:191,g:167,b:39),new Color(r:191,g:167,b:39),new Color(r:191,g:175,b:47),new Color(r:183,g:175,b:47),new Color(r:183,g:183,b:47),new Color(r:183,g:183,b:55),new Color(r:207,g:207,b:111),new Color(r:223,g:223,b:159),new Color(r:239,g:239,b:199),new Color(r:255,g:255,b:255)
@@ -45,23 +48,23 @@
     {
         _context = context;
 
-        rtWidth = 300;
-        rtHeight = 100;
+        fireWidth = 300;
+        fireHeight = 100;
 
-        renderTarget = _context.CreateImageData(rtWidth, rtHeight);
-        data = new byte[rtWidth * rtHeight * 4];
-        fireData = new byte[rtWidth * rtHeight];
+        renderTarget = _context.CreateImageData(fireWidth, fireHeight);
+        fireColorData = new byte[fireWidth * fireHeight * 4];
+        fireData = new byte[fireWidth * fireHeight];
         for (int i = 0; i < fireData.Length; i++)
             fireData[i] = fireStartIntensity;
     }
 
     private void calculateFirePropagation()
     {
-        for (int column = 0; column < rtWidth; column++)
+        for (int column = 0; column < fireWidth; column++)
         {
-            for (int row = 0; row < rtHeight; row++)
+            for (int row = 0; row < fireHeight; row++)
             {
-                int pixelIndex = column + (rtWidth * row);
+                int pixelIndex = column + (fireWidth * row);
                 updateFireIntensityPerPixel(pixelIndex);
             }
         }
@@ -69,8 +72,8 @@
 
     private void updateFireIntensityPerPixel(int currentPixelIndex)
     {
-        int belowPixelIndex = currentPixelIndex + rtWidth;
-        if (belowPixelIndex >= rtWidth * rtHeight)
+        int belowPixelIndex = currentPixelIndex + fireWidth;
+        if (belowPixelIndex >= fireWidth * fireHeight)
             return;
 
         byte decay = (byte)(Math.Floor(Random.Shared.NextDouble() * 3));
@@ -81,11 +84,11 @@
         fireData[fireDataIndex] = newFireIntensity;
 
         int colorIndex = fireDataIndex * 4;
-
-        data[colorIndex] = (newFireIntensity >= palette.Length) ? (byte)255 : palette[newFireIntensity].r;
-        data[colorIndex + 1] = (newFireIntensity >= palette.Length) ? (byte)255 : palette[newFireIntensity].g;
-        data[colorIndex + 2] = (newFireIntensity >= palette.Length) ? (byte)255 : palette[newFireIntensity].b;
-        data[colorIndex + 3] = 255;
+        var color = (newFireIntensity >= palette.Length) ? Color.White : palette[newFireIntensity];
+        fireColorData[colorIndex] = color.r;
+        fireColorData[colorIndex + 1] = color.g;
+        fireColorData[colorIndex + 2] = color.b;
+        fireColorData[colorIndex + 3] = 255;
     }
 
     private void Update(float timeStamp)
@@ -123,7 +126,7 @@
           _context.FillStyle = "red";
           _context.FillText($"FPS: {fps:###}", 20, 40);*/
 
-        _context.PutImageData(renderTarget, data, 10, 50);
+        _context.PutImageData(renderTarget, fireColorData, 10, 50);
     }
 
     private void OnFrameReady(float timeStamp)
