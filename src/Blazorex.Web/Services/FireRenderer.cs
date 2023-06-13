@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-
-namespace Blazorex.Web.Services
+﻿namespace Blazorex.Web.Services
 {
     public class FireRenderer
     {
@@ -47,7 +45,7 @@ namespace Blazorex.Web.Services
 
         public void Render()
         {
-            _context.PutImageData(_renderTarget, fireColorData, 10, 50);
+            _context.PutImageData(_renderTarget, fireColorData, 0, 0);
         }
 
         private void UpdateFireIntensityPerPixel(int currentPixelIndex)
@@ -66,7 +64,7 @@ namespace Blazorex.Web.Services
             fireData[fireDataIndex] = newFireIntensity;
 
             int colorIndex = fireDataIndex * 4;
-            var color = Color.White;// (newFireIntensity >= palette.Length) ? Color.White : palette[newFireIntensity];
+            var color = (newFireIntensity >= palette.Length) ? Color.White : palette[newFireIntensity];
             fireColorData[colorIndex] = color.R;
             fireColorData[colorIndex + 1] = color.G;
             fireColorData[colorIndex + 2] = color.B;
