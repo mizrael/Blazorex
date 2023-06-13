@@ -1,7 +1,7 @@
 # Blazorex
 
 ## Description
-Blazorex is an HTML Canvas wrapper library for Blazor, written with .NET 6.
+Blazorex is an HTML Canvas wrapper library for Blazor, written with .NET.
 
 ![Blazorex](https://raw.githubusercontent.com/mizrael/Blazorex/master/sample.gif "Blazorex")
 
@@ -10,7 +10,7 @@ Blazorex can be installed as Nuget package: https://www.nuget.org/packages/Blazo
 
 ## Usage
 
-Simply add the `Canvas` Component to your Razor page and register to the `OnCanvasReady` to receive the `IRenderContext` instance.
+Simply add the `Canvas` Component to your Razor page and register to the `OnCanvasReady` to receive the `CanvasBase` instance.
 
 Then use `OnFrameReady` to define your update/rendere logic:
 
@@ -22,7 +22,7 @@ Then use `OnFrameReady` to define your update/rendere logic:
 @code{
     IRenderContext _context;
 
-    private void OnCanvasReady(IRenderContext context)
+    private void OnCanvasReady(CanvasBase canvas)
     {
         _context = context;
     }
@@ -43,6 +43,10 @@ You might also need to update your `index.html` to include the library's CSS:
 </head>
 ```
 
-For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder.
+For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder. It showcases some interesting functionalities like
+- multiple canvases
+- background rendering
+- image rendering
+- dynamic image generation
 
 A sample game can be found here: [Blazeroids](https://github.com/mizrael/Blazeroids)

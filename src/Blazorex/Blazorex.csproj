@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net7.0</TargetFramework>
-		<PackageVersion>1.0.0-alpha</PackageVersion>
+		<PackageVersion>1.0.0</PackageVersion>
 		<IsPackable>true</IsPackable>
 		<Authors>davidguida</Authors>
 		<Product>Blazorex</Product>
