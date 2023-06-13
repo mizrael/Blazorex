@@ -64,24 +64,21 @@ window.Blazorex = (() => {
                 callMethod(ctx, op.MethodName, op.Args);
         }
     },
-    directCall = (rawCtxId, rawMethodName, rawParams) => {
-        const ctxId = BINDING.conv_string(rawCtxId),
-            ctx = _contexts[ctxId].context;
+    directCall = (ctxId, methodName, jParams) => {
+        const ctx = _contexts[ctxId].context;
         if (!ctx) {
             return;
         }
-        const methodName = BINDING.conv_string(rawMethodName),
-            jParams = BINDING.conv_string(rawParams),
-            params = JSON.parse(jParams),
+        const params = JSON.parse(jParams),
             result = callMethod(ctx, methodName, params);            
 
         if (methodName == 'createPattern') {
             const patternId = _patterns.length;
             _patterns.push(result);
-            return BINDING.js_to_mono_obj(patternId);
+            return patternId;
         }
 
-        return BINDING.js_to_mono_obj(result);
+        return result;
     };
 
     window.onkeyup = (e) => {
