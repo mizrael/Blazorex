@@ -20,11 +20,11 @@ Then use `OnFrameReady` to define your update/rendere logic:
         OnCanvasReady="(ctx) => OnCanvasReady(ctx)" />
 
 @code{
-    IRenderContext _context;
+    CanvasBase _canvas;
 
     private void OnCanvasReady(CanvasBase canvas)
     {
-        _context = context;
+        _canvas = canvas;
     }
 
     private void OnFrameReady(float timeStamp)
@@ -47,6 +47,7 @@ For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder
 - multiple canvases
 - background rendering
 - image rendering
-- dynamic image generation
+- procedural image generation (yes, the fire on the background is fully procedural!
+Thanks [filipedeschamps](https://github.com/filipedeschamps) for the awesome repository showing how to render the [Doom fire](https://github.com/filipedeschamps/doom-fire-algorithm)! )
 
 A sample game can be found here: [Blazeroids](https://github.com/mizrael/Blazeroids)
