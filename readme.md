@@ -1,9 +1,16 @@
 # Blazorex
 
 ## Description
-Blazorex is an HTML Canvas wrapper library for Blazor, written with .NET.
+Blazorex is an HTML Canvas wrapper library for Blazor.
 
 ![Blazorex](https://raw.githubusercontent.com/mizrael/Blazorex/master/sample.gif "Blazorex")
+
+It has some interesting functionalities like:
+- multiple canvases
+- background rendering
+- image rendering
+- procedural image generation (yes, the fire on the background is fully procedural!
+Thanks [filipedeschamps](https://github.com/filipedeschamps) for the awesome repository showing how to render the [Doom fire](https://github.com/filipedeschamps/doom-fire-algorithm)! )
 
 ## Installation
 Blazorex can be installed as Nuget package: https://www.nuget.org/packages/Blazorex/
@@ -43,11 +50,6 @@ You might also need to update your `index.html` to include the library's CSS:
 </head>
 ```
 
-For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder. It showcases some interesting functionalities like
-- multiple canvases
-- background rendering
-- image rendering
-- procedural image generation (yes, the fire on the background is fully procedural!
-Thanks [filipedeschamps](https://github.com/filipedeschamps) for the awesome repository showing how to render the [Doom fire](https://github.com/filipedeschamps/doom-fire-algorithm)! )
+For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder. 
 
 A sample game can be found here: [Blazeroids](https://github.com/mizrael/Blazeroids)
