@@ -4,6 +4,8 @@ namespace Blazorex
 {
     public interface IRenderContext
     {
+        internal void ProcessBatch();
+
         void ClearRect(float x, float y, float width, float height);
         void FillRect(float x, float y, float width, float height);
         void StrokeRect(float x, float y, float width, float height);

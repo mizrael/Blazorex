@@ -6,37 +6,40 @@ namespace Blazorex.Web.Services
     {
         private readonly IRenderContext _context;
 
-        private int renderTarget;
-        private int fireWidth = 300;
-        private int fireHeight = 100;
-        private byte fireStartIntensity = 36;
-        private byte[] fireColorData;
-        private byte[] fireData;
+        private readonly int _renderTarget;
+        private readonly int _width;
+        private readonly int _height;
+        private readonly byte fireStartIntensity = 36;
+        private readonly byte[] fireColorData;
+        private readonly byte[] fireData;
 
         private readonly Color[] palette = new Color[] {
-            new Color(r:7, g:7, b:7), new Color(r:31,g:7,b:7),new Color(r:47,g:15,b:7),new Color(r:71,g:15,b:7),new Color(r:87,g:23,b:7),new Color(r:103,g:31,b:7),new Color(r:119,g:31,b:7),new Color(r:143,g:39,b:7),new Color(r:159,g:47,b:7),new Color(r:175,g:63,b:7),new Color(r:191,g:71,b:7),new Color(r:199,g:71,b:7),new Color(r:223,g:79,b:7),new Color(r:223,g:87,b:7),new Color(r:223,g:87,b:7),new Color(r:215,g:95,b:7),new Color(r:215,g:95,b:7),new Color(r:215,g:103,b:15),new Color(r:207,g:111,b:15),new Color(r:207,g:119,b:15),new Color(r:207,g:127,b:15),new Color(r:207,g:135,b:23),new Color(r:199,g:135,b:23),new Color(r:199,g:143,b:23),new Color(r:199,g:151,b:31),new Color(r:191,g:159,b:31),new Color(r:191,g:159,b:31),new Color(r:191,g:167,b:39),new Color(r:191,g:167,b:39),new Color(r:191,g:175,b:47),new Color(r:183,g:175,b:47),new Color(r:183,g:183,b:47),new Color(r:183,g:183,b:55),new Color(r:207,g:207,b:111),new Color(r:223,g:223,b:159),new Color(r:239,g:239,b:199),new Color(r:255,g:255,b:255)
+            new Color(R:7, G:7, B:7), new Color(R:31,G:7,B:7),new Color(R:47,G:15,B:7),new Color(R:71,G:15,B:7),new Color(R:87,G:23,B:7),new Color(R:103,G:31,B:7),new Color(R:119,G:31,B:7),new Color(R:143,G:39,B:7),new Color(R:159,G:47,B:7),new Color(R:175,G:63,B:7),new Color(R:191,G:71,B:7),new Color(R:199,G:71,B:7),new Color(R:223,G:79,B:7),new Color(R:223,G:87,B:7),new Color(R:223,G:87,B:7),new Color(R:215,G:95,B:7),new Color(R:215,G:95,B:7),new Color(R:215,G:103,B:15),new Color(R:207,G:111,B:15),new Color(R:207,G:119,B:15),new Color(R:207,G:127,B:15),new Color(R:207,G:135,B:23),new Color(R:199,G:135,B:23),new Color(R:199,G:143,B:23),new Color(R:199,G:151,B:31),new Color(R:191,G:159,B:31),new Color(R:191,G:159,B:31),new Color(R:191,G:167,B:39),new Color(R:191,G:167,B:39),new Color(R:191,G:175,B:47),new Color(R:183,G:175,B:47),new Color(R:183,G:183,B:47),new Color(R:183,G:183,B:55),new Color(R:207,G:207,B:111),new Color(R:223,G:223,B:159),new Color(R:239,G:239,B:199),new Color(R:255,G:255,B:255)
         };
 
-        public FireRenderer(IRenderContext context)
+        public FireRenderer(IRenderContext context, int width, int height)
         {
             _context = context;
 
-            renderTarget = _context.CreateImageData(fireWidth, fireHeight);
+            _width = width;
+            _height = height;
 
-            fireColorData = new byte[fireWidth * fireHeight * 4];
+            _renderTarget = _context.CreateImageData(_width, _height);
 
-            fireData = new byte[fireWidth * fireHeight];
+            fireColorData = new byte[_width * _height * 4];
+
+            fireData = new byte[_width * _height];
             for (int i = 0; i < fireData.Length; i++)
                 fireData[i] = fireStartIntensity;
         }
 
         public void Update()
         {
-            for (int column = 0; column < fireWidth; column++)
+            for (int column = 0; column < _width; column++)
             {
-                for (int row = 0; row < fireHeight; row++)
+                for (int row = 0; row < _height; row++)
                 {
-                    int pixelIndex = column + (fireWidth * row);
+                    int pixelIndex = column + (_width * row);
                     UpdateFireIntensityPerPixel(pixelIndex);
                 }
             }
@@ -44,13 +47,13 @@ namespace Blazorex.Web.Services
 
         public void Render()
         {
-            _context.PutImageData(renderTarget, fireColorData, 10, 50);
+            _context.PutImageData(_renderTarget, fireColorData, 10, 50);
         }
 
         private void UpdateFireIntensityPerPixel(int currentPixelIndex)
         {
-            int belowPixelIndex = currentPixelIndex + fireWidth;
-            if (belowPixelIndex >= fireWidth * fireHeight)
+            int belowPixelIndex = currentPixelIndex + _width;
+            if (belowPixelIndex >= _width * _height)
                 return;
 
             byte decay = (byte)(Math.Floor(Random.Shared.NextDouble() * 3));
@@ -58,20 +61,17 @@ namespace Blazorex.Web.Services
             byte newFireIntensity = Math.Max((byte)0, (byte)(belowPixelFireIntensity - decay));
 
             int fireDataIndex = currentPixelIndex - decay;
+            if (fireDataIndex < 0 || fireDataIndex > fireData.Length)
+                return;
             fireData[fireDataIndex] = newFireIntensity;
 
             int colorIndex = fireDataIndex * 4;
-            var color = (newFireIntensity >= palette.Length) ? Color.White : palette[newFireIntensity];
-            fireColorData[colorIndex] = color.r;
-            fireColorData[colorIndex + 1] = color.g;
-            fireColorData[colorIndex + 2] = color.b;
+            var color = Color.White;// (newFireIntensity >= palette.Length) ? Color.White : palette[newFireIntensity];
+            fireColorData[colorIndex] = color.R;
+            fireColorData[colorIndex + 1] = color.G;
+            fireColorData[colorIndex + 2] = color.B;
             fireColorData[colorIndex + 3] = 255;
         }
-    }
-
-    public record Color(byte r, byte g, byte b)
-    {
-        public readonly static Color White = new Color(255, 255, 255);
     }
 
 }

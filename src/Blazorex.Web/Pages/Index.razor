@@ -28,9 +28,12 @@
     float _lastUpdate = 0;
     float _elapsedTime = 0;
 
+    private CanvasBase _fireCanvas;
     private Services.FireRenderer _fireRenderer;
+    private int _fireWidth = 200;
+    private int _fireHeight = 50;
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
@@ -39,22 +42,41 @@
         {
             Hidden = false,
             Width = _width,
-            Heigth = _height,
-            OnCanvasReady = this.OnCanvasReady,
-            OnFrameReady = this.OnFrameReady,
+            Height = _height,
+            OnCanvasReady = this.OnMainCanvasReady,
+            OnFrameReady = this.OnMainFrameReady,
         });
+        _canvasManager.CreateCanvas("fire", new CanvasCreationOptions()
+        {
+            Hidden = false,
+            Width = _fireWidth,
+            Height = _fireHeight,
+            OnCanvasReady = this.OnFireCanvasReady,
+            OnFrameReady = this.OnFireCanvasFrameReady,
+        });
+
     }
 
-    private void OnCanvasReady(IRenderContext context)
+    private void OnFireCanvasReady(CanvasBase canvas)
     {
-        _context = context;
-
-        _fireRenderer = new Services.FireRenderer(_context);
+        _fireCanvas = canvas;
+        _fireRenderer = new Services.FireRenderer(canvas.RenderContext, _fireWidth, _fireHeight);
     }
 
-    private void OnFrameReady(float timeStamp)
+    private void OnFireCanvasFrameReady(float timeStamp)
     {
-        this.Update(timeStamp);
+        _fireRenderer.Update();
+        _fireRenderer.Render();
+    }
+
+    private void OnMainCanvasReady(CanvasBase canvas)
+    {
+        _context = canvas.RenderContext;
+    }
+
+    private void OnMainFrameReady(float timestamp)
+    {
+        this.Update(timestamp);
         this.Render();
     }
 
@@ -72,27 +94,25 @@
         var speed = Math.Clamp(_spriteSpeed * _elapsedTime, 0, _spriteMaxSpeed);
         _x += _dx * speed;
         _y += _dy * speed;
-
-        _fireRenderer.Update();
     }
 
     private void Render()
     {
-        // _context.ClearRect(0, 0, _width, _height);
+        _context.ClearRect(0, 0, _width, _height);
 
-        /*  _context.FillStyle = "green";
-          _context.FillRect(0, 0, _width, _height);
+        //_context.DrawImage(_fireCanvas.ElementReference, 0,0, _fireWidth, _fireHeight);
 
-          _context.StrokeStyle = "rgb(255, 255,0)";
-          _context.LineWidth = 3;
-          _context.StrokeRect(_x, _y, _spriteWidth, _spriteHeight);
-          _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);
+        _context.FillStyle = "green";
+        _context.FillRect(0, 0, _width, _height);
 
-          var fps = 1000f / _elapsedTime;
-          _context.Font = "24px verdana";
-          _context.FillStyle = "red";
-          _context.FillText($"FPS: {fps:###}", 20, 40);*/
+        _context.StrokeStyle = "rgb(255, 255,0)";
+        _context.LineWidth = 3;
+        _context.StrokeRect(_x, _y, _spriteWidth, _spriteHeight);
+        _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);
 
-        _fireRenderer.Render();
+        var fps = 1000f / _elapsedTime;
+        _context.Font = "24px verdana";
+        _context.FillStyle = "red";
+        _context.FillText($"FPS: {fps:###}", 20, 40);
     }
 }

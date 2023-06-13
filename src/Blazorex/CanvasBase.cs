@@ -1,25 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
 
 namespace Blazorex
 {
-    public class Canvas : ComponentBase
+    public class CanvasBase : ComponentBase
     {
-        private readonly string _id = Guid.NewGuid().ToString();
-        private RenderContext2D _context;     
-
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        protected override async Task OnInitializedAsync()
         {
-            int seq = 0;
-            builder.OpenElement(seq++, "canvas");
-            builder.AddAttribute(seq++, "id", _id);
-            builder.AddAttribute(seq++, "width", this.Width);
-            builder.AddAttribute(seq++, "height", this.Height);
-
-            builder.CloseElement();
+            if (this.CanvasManager is null)
+                return;
+            await this.CanvasManager.OnChildCanvasAddedAsync(this);
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -30,20 +22,20 @@ namespace Blazorex
             await JSRuntime.InvokeVoidAsync("import", "./_content/Blazorex/blazorex.js");
 
             var managedInstance = DotNetObjectReference.Create(this);
-            await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", _id, managedInstance);
+            await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", Id, managedInstance);
 
-            _context = new RenderContext2D(_id, this.JSRuntime as IJSInProcessRuntime);
+            this.RenderContext = new RenderContext2D(Id, this.JSRuntime as IJSInProcessRuntime);
                         
-            await this.OnCanvasReady.InvokeAsync(_context);
+            await this.OnCanvasReady.InvokeAsync(this);
         }
 
-        #region js interop
+        #region JS interop
 
         [JSInvokable]
         public async ValueTask UpdateFrame(float timeStamp)
         {
             await this.OnFrameReady.InvokeAsync(timeStamp);
-            _context.ProcessBatch();
+            this.RenderContext.ProcessBatch();
         }
 
         [JSInvokable]
@@ -64,7 +56,7 @@ namespace Blazorex
             await this.OnMouseMove.InvokeAsync(coords);
         }
 
-        #endregion js interop
+        #endregion JS interop
 
         #region Event Callbacks
 
@@ -81,11 +73,13 @@ namespace Blazorex
         public EventCallback<float> OnFrameReady { get; set; }
 
         [Parameter]
-        public EventCallback<IRenderContext> OnCanvasReady { get; set; }
+        public EventCallback<CanvasBase> OnCanvasReady { get; set; }
 
         #endregion Event Callbacks
 
-        #region properties
+        #region Properties
+
+        public string Id { get; } = Guid.NewGuid().ToString();
 
         [Inject]
         internal IJSRuntime JSRuntime { get; set; }
@@ -96,12 +90,16 @@ namespace Blazorex
         [Parameter]
         public int Height { get; set; } = 600;
 
-        #endregion properties
-    }
+        [Parameter]
+        public string Name { get; set; }
 
-    public readonly struct MouseCoords
-    {
-        public readonly int X;
-        public readonly int Y;
+        public ElementReference ElementReference { get; internal set; }
+
+        [CascadingParameter]
+        public CanvasManager CanvasManager { get; set; }
+
+        public IRenderContext RenderContext { get; private set; }
+
+        #endregion Properties
     }
 }

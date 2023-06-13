@@ -1,28 +1,28 @@
+using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace Blazorex
 {
     public abstract class CanvasManagerBase : ComponentBase
     {
         protected readonly Dictionary<string, CanvasCreationOptions> _names = new();
-        protected readonly Dictionary<string, Canvas> _canvases = new();
+        protected readonly Dictionary<string, CanvasBase> _canvases = new();
 
-        public async ValueTask<Canvas> CreateCanvas(
-            string name, 
-            CanvasCreationOptions options)
+        public void CreateCanvas(string name, CanvasCreationOptions options)
         {
             _names.Add(name, options);
 
             this.StateHasChanged();
+        }
 
-            await this.OnCanvasAdded.InvokeAsync();
-
-            return _canvases[name];
+        internal async ValueTask OnChildCanvasAddedAsync(CanvasBase canvas)
+        {
+            await this.OnCanvasAdded.InvokeAsync(canvas);
         }
 
         [Parameter]
-        public EventCallback OnCanvasAdded { get; set; }
+        public EventCallback<CanvasBase> OnCanvasAdded { get; set; }
     }
 }

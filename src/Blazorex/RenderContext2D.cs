@@ -36,7 +36,7 @@ namespace Blazorex
 
         #region public methods
 
-        internal void ProcessBatch()
+        void IRenderContext.ProcessBatch()
         {
             var payload = JsonSerializer.Serialize(_jsOps);
             _jsOps.Clear();
