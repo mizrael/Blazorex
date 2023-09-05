@@ -17,6 +17,8 @@
     float _x = 400;
     float _y = 300;
 
+    Blazorex.MouseCoords _mousecoords;
+
     float _dx = 1;
     float _dy = 1;
     float _spriteSpeed = 0.25f;
@@ -53,6 +55,7 @@
             Height = _height,
             OnCanvasReady = this.OnMainCanvasReady,
             OnFrameReady = this.OnMainFrameReady,
+            OnMouseMove = this.OnMainCanvasMouseMove,
         });
     }
 
@@ -77,6 +80,11 @@
     {
         this.Update(timestamp);
         this.Render();
+    }
+
+    private void OnMainCanvasMouseMove(Blazorex.MouseCoords coords)
+    {
+        _mousecoords = coords;
     }
 
     private void Update(float timeStamp)
@@ -110,5 +118,6 @@
         _context.Font = "24px verdana";
         _context.FillStyle = "red";
         _context.FillText($"FPS: {fps:###}", 20, 40);
+        _context.FillText($"Mouse Coords: {_mousecoords.X} : {_mousecoords.Y}", 20, 60);
     }
 }

@@ -1,8 +1,8 @@
 ﻿namespace Blazorex
 {
-    public readonly struct MouseCoords
+    public struct MouseCoords
     {
-        public readonly int X;
-        public readonly int Y;
+        public int X { get; set; }
+        public int Y { get; set; }
     }
 }
