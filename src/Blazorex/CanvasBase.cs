@@ -56,6 +56,12 @@ namespace Blazorex
             await this.OnMouseMove.InvokeAsync(coords);
         }
 
+        [JSInvokable]
+        public async ValueTask Resized(int width, int height)
+        {
+            await this.OnResize.InvokeAsync(new Size(width, height));
+        }
+
         #endregion JS interop
 
         #region Event Callbacks
@@ -68,6 +74,9 @@ namespace Blazorex
 
         [Parameter]
         public EventCallback<MouseCoords> OnMouseMove { get; set; }
+
+        [Parameter]
+        public EventCallback<Size> OnResize { get; set; }
 
         [Parameter]
         public EventCallback<float> OnFrameReady { get; set; }

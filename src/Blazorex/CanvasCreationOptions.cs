@@ -17,5 +17,6 @@ namespace Blazorex
         public Action<int> OnKeyUp { get; init; }
         public Action<int> OnKeyDown { get; init; }
         public Action<MouseCoords> OnMouseMove { get; init; }
+        public Action<Size> OnResize { get; init; }
     }
 }

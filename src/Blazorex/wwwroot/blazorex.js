@@ -100,6 +100,11 @@ window.Blazorex = (() => {
             _contexts[ctx].managedInstance.invokeMethodAsync('MouseMoved', coords);
         }
     };
+    window.onresize = function () {
+        for (let ctx in _contexts) {
+            _contexts[ctx].managedInstance.invokeMethodAsync('Resized', window.innerWidth, window.innerHeight);
+        }
+    }
 
     return {
         initCanvas,
