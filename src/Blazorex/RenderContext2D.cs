@@ -133,6 +133,27 @@ namespace Blazorex
         public void Restore()
             => this.Call("restore");
 
+        public void LineTo(float x, float y)
+            => this.Call("lineTo", x, y);
+
+        public void MoveTo(float x, float y)
+            => this.Call("moveTo", x, y);
+
+        public void ClosePath()
+            => this.Call("closePath");
+
+        public void Fill()
+            => this.Call("fill");
+
+        public void Stroke()
+            => this.Call("stroke");
+
+        public void Arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise = false)
+            => this.Call("arc", x, y, radius, startAngle, endAngle, anticlockwise);
+
+        public void Rect(float x, float y, float width, float height)
+            => this.Call("rect", x, y, width, height);
+
         #endregion public methods
 
         #region properties

@@ -33,6 +33,13 @@ namespace Blazorex
 
         void Save();
         void Restore();
+        void Arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise = false);
+        void LineTo(float x, float y);
+        void MoveTo(float x, float y);
+        void ClosePath();
+        void Fill();
+        void Stroke();
+        void Rect(float x, float y, float width, float height);
 
 
         object FillStyle { get; set; }
