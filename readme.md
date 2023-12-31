@@ -1,4 +1,5 @@
 # Blazorex
+[![Nuget](https://img.shields.io/nuget/v/Blazorex?style=plastic)](https://www.nuget.org/packages/Blazorex/)
 
 ## Description
 Blazorex is an HTML Canvas wrapper library for Blazor.
@@ -19,7 +20,7 @@ Blazorex can be installed as Nuget package: https://www.nuget.org/packages/Blazo
 
 Simply add the `Canvas` Component to your Razor page and register to the `OnCanvasReady` to receive the `CanvasBase` instance.
 
-Then use `OnFrameReady` to define your update/rendere logic:
+Then use `OnFrameReady` to define your update/render logic:
 
 ```csharp
 <Canvas Width="800" Height="600" 
