@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 
 namespace Blazorex
 {
-    public class CanvasBase : ComponentBase
+    public class CanvasBase : ComponentBase, IAsyncDisposable
     {
+        private bool _disposed = false;
+
         protected override async Task OnInitializedAsync()
         {
             if (this.CanvasManager is null)
@@ -110,5 +112,18 @@ namespace Blazorex
         public IRenderContext RenderContext { get; private set; }
 
         #endregion Properties
+
+        #region Disposing
+        public async ValueTask DisposeAsync()
+        {
+            if (!_disposed)
+            {
+                // Call javascript to delete this canvas Id from the _contexts array
+                await JSRuntime.InvokeVoidAsync("Blazorex.removeContext", Id);
+                
+                _disposed = true;
+            }
+        }
+        #endregion Disposing
     }
 }

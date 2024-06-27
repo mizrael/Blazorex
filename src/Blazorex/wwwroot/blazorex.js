@@ -79,7 +79,16 @@ window.Blazorex = (() => {
         }
 
         return result;
-    };
+    },
+    removeContext = (ctxId) => {
+        const ctx = _contexts[ctxId].context; 
+        if (!ctx){
+            return ;
+        }
+
+        delete _contexts[ctxId]; 
+    }
+    ;
 
     window.onkeyup = (e) => {
         for (let ctx in _contexts) {
@@ -112,8 +121,12 @@ window.Blazorex = (() => {
         createImageData,
         putImageData,
         processBatch,
-        directCall
+        directCall,
+        removeContext
     };
 })();
 
 window.requestAnimationFrame(Blazorex.onFrameUpdate);
+
+
+
