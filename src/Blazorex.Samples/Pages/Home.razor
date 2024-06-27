@@ -1,5 +1,7 @@
 ﻿@page "/"
 
+<PageTitle>Home</PageTitle>
+
 <img @ref="_spritesheet" hidden src="blazor.png" />
 
 <CanvasManager @ref="_canvasManager" />
@@ -42,7 +44,7 @@
 
         _canvasManager.CreateCanvas("fire", new CanvasCreationOptions()
         {
-            Hidden = false,
+            Hidden = true,
             Width = _fireWidth,
             Height = _fireHeight,
             OnCanvasReady = this.OnFireCanvasReady,
@@ -90,7 +92,7 @@
 
     private void OnMainCanvasResize(Size windowSize)
     {
-   
+
     }
 
     private void Update(float timeStamp)
