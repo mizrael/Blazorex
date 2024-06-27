@@ -121,7 +121,8 @@ window.Blazorex = (() => {
         createImageData,
         putImageData,
         processBatch,
-        directCall
+        directCall,
+        removeContext
     };
 })();
 
