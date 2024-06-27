@@ -1,4 +1,4 @@
-using Blazorex.Web;
+using Blazorex.Samples;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
