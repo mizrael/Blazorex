@@ -120,8 +120,7 @@ namespace Blazorex
             {
                 // Call javascript to delete this canvas Id from the _contexts array
                 await JSRuntime.InvokeVoidAsync("Blazorex.removeContext", Id);
-                await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", Id, managedInstance);
-
+                
                 _disposed = true;
             }
         }
