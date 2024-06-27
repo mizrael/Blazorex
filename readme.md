@@ -18,7 +18,9 @@ Blazorex can be installed as Nuget package: https://www.nuget.org/packages/Blazo
 
 ## Usage
 
-Simply add the `Canvas` Component to your Razor page and register to the `OnCanvasReady` to receive the `CanvasBase` instance.
+### Simple scenario
+
+Just add the `Canvas` Component to your Razor page and register to the `OnCanvasReady` to receive the `CanvasBase` instance.
 
 Then use `OnFrameReady` to define your update/render logic:
 
@@ -51,6 +53,34 @@ You might also need to update your `index.html` to include the library's CSS:
 </head>
 ```
 
-For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Web) folder. 
+### Multiple Canvases
+In case you want to have multiple canvases on the same page, you can use the `CanvasManager` component instead:
+
+```csharp
+<CanvasManager @ref="_canvasManager" />
+
+@code{
+        CanvasManager _canvasManager;
+        
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (!firstRender)
+                return;
+        
+            _canvasManager.CreateCanvas("myCanvas", new CanvasCreationOptions()
+            {
+                Width = 800,
+                Height = 600,
+                Hidden = false,
+                OnCanvasReady = this.OnMyCanvasReady,
+                OnFrameReady = this.OnMyCanvasFrameReady,
+            });
+        }
+}
+```
+
+You simply have to get a reference to the `CanvasManager` and then call the `CreateCanvas` passing an instance of `CanvasCreationOptions` with the desired parameters. 
+
+For a complete sample, check the [./src/Blazorex.Web](./src/Blazorex.Samples) folder. 
 
 A sample game can be found here: [Blazeroids](https://github.com/mizrael/Blazeroids)
