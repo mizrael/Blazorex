@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<PackageVersion>1.0.3</PackageVersion>
+		<PackageVersion>1.0.4</PackageVersion>
 		<IsPackable>true</IsPackable>
 		<Authors>davidguida</Authors>
 		<Product>Blazorex</Product>
