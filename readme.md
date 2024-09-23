@@ -1,10 +1,12 @@
 # Blazorex
 [![Nuget](https://img.shields.io/nuget/v/Blazorex?style=plastic)](https://www.nuget.org/packages/Blazorex/)
 
+![Blazorex](https://raw.githubusercontent.com/mizrael/Blazorex/refs/heads/master/blazorex-logo.png)
+
 ## Description
 Blazorex is an HTML Canvas wrapper library for Blazor.
 
-![Blazorex](https://raw.githubusercontent.com/mizrael/Blazorex/master/sample.gif "Blazorex")
+![Doom fire effect with Blazorex](https://raw.githubusercontent.com/mizrael/Blazorex/master/sample.gif "Blazorex")
 
 It has some interesting functionalities like:
 - multiple canvases
