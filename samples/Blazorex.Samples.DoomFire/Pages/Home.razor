@@ -2,32 +2,18 @@
 
 <PageTitle>Home</PageTitle>
 
-<img @ref="_spritesheet" hidden src="blazor.png" />
-
 <CanvasManager @ref="_canvasManager" />
 
 @code
 {
     CanvasManager _canvasManager;
 
-    ElementReference _spritesheet;
     IRenderContext _context;
 
     int _width = 800;
     int _height = 600;
 
-    float _x = 400;
-    float _y = 300;
-
     Blazorex.MouseCoords _mousecoords;
-
-    float _dx = 1;
-    float _dy = 1;
-    float _spriteSpeed = 0.25f;
-    float _spriteMaxSpeed = 5f;
-
-    int _spriteWidth = 200;
-    int _spriteHeight = 200;
 
     float _lastUpdate = 0;
     float _elapsedTime = 0;
@@ -99,16 +85,6 @@
     {
         _elapsedTime = timeStamp - _lastUpdate;
         _lastUpdate = timeStamp;
-
-        if (_x + _spriteWidth >= _width || _x < 0)
-            _dx = -_dx;
-
-        if (_y + _spriteHeight >= _height || _y < 0)
-            _dy = -_dy;
-
-        var speed = Math.Clamp(_spriteSpeed * _elapsedTime, 0, _spriteMaxSpeed);
-        _x += _dx * speed;
-        _y += _dy * speed;
     }
 
     private void Render()
@@ -116,11 +92,6 @@
         _context.ClearRect(0, 0, _width, _height);
 
         _context.DrawImage(_fireCanvas.ElementReference, 0, 0, _width, _height);
-
-        _context.StrokeStyle = "rgb(255, 255,0)";
-        _context.LineWidth = 3;
-        _context.StrokeRect(_x, _y, _spriteWidth, _spriteHeight);
-        _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);
 
         var fps = 1000f / _elapsedTime;
         _context.Font = "24px verdana";

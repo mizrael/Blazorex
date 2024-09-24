@@ -1,0 +1,75 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<CanvasManager @ref="_canvasManager" />
+
+@code
+{
+    CanvasManager _canvasManager;
+
+    IRenderContext _context;
+
+    int _width = 800;
+    int _height = 600;
+
+    Blazorex.MouseCoords _mousecoords;
+
+    float _lastUpdate = 0;
+    float _elapsedTime = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _canvasManager.CreateCanvas("main", new CanvasCreationOptions()
+        {
+            Hidden = false,
+            Width = _width,
+            Height = _height,
+            OnCanvasReady = this.OnMainCanvasReady,
+            OnFrameReady = this.OnMainFrameReady,
+            OnMouseMove = this.OnMainCanvasMouseMove,
+            OnResize = this.OnMainCanvasResize,
+        });
+    }
+
+    private void OnMainCanvasReady(CanvasBase canvas)
+    {
+        _context = canvas.RenderContext;
+    }
+
+    private void OnMainFrameReady(float timestamp)
+    {
+        this.Update(timestamp);
+        this.Render();
+    }
+
+    private void OnMainCanvasMouseMove(Blazorex.MouseCoords coords)
+    {
+        _mousecoords = coords;
+    }
+
+    private void OnMainCanvasResize(Size windowSize)
+    {
+
+    }
+
+    private void Update(float timeStamp)
+    {
+        _elapsedTime = timeStamp - _lastUpdate;
+        _lastUpdate = timeStamp;
+    }
+
+    private void Render()
+    {
+        _context.ClearRect(0, 0, _width, _height);
+
+        var fps = 1000f / _elapsedTime;
+        _context.Font = "24px verdana";
+        _context.FillStyle = "red";
+        _context.FillText($"FPS: {fps:###}", 20, 40);
+        _context.FillText($"Mouse Coords: {_mousecoords.X} : {_mousecoords.Y}", 20, 60);
+    }
+}

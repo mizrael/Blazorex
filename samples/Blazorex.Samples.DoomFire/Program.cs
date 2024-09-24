@@ -1,4 +1,4 @@
-using Blazorex.Samples;
+using Blazorex.Samples.DoomFire;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
