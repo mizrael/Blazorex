@@ -5,7 +5,9 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazorex", "Blazorex\Blazorex.csproj", "{6A802B2C-969E-4033-A329-AC486E5C9731}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazorex.Samples", "Blazorex.Samples\Blazorex.Samples.csproj", "{BB56658A-DD9D-4810-97BB-9833B2FF94F5}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazorex.Samples.DoomFire", "..\samples\Blazorex.Samples.DoomFire\Blazorex.Samples.DoomFire.csproj", "{13296A87-1CF6-449E-9FFD-58AD34C99541}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,13 +19,16 @@ Global
 		{6A802B2C-969E-4033-A329-AC486E5C9731}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A802B2C-969E-4033-A329-AC486E5C9731}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A802B2C-969E-4033-A329-AC486E5C9731}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BB56658A-DD9D-4810-97BB-9833B2FF94F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BB56658A-DD9D-4810-97BB-9833B2FF94F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BB56658A-DD9D-4810-97BB-9833B2FF94F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BB56658A-DD9D-4810-97BB-9833B2FF94F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13296A87-1CF6-449E-9FFD-58AD34C99541}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13296A87-1CF6-449E-9FFD-58AD34C99541}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13296A87-1CF6-449E-9FFD-58AD34C99541}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13296A87-1CF6-449E-9FFD-58AD34C99541}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{13296A87-1CF6-449E-9FFD-58AD34C99541} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4E38A4B6-BFE1-4015-B014-748F68320AC4}

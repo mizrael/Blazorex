@@ -12,7 +12,7 @@
   </ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Blazorex\Blazorex.csproj" />
+		<ProjectReference Include="..\..\src\Blazorex\Blazorex.csproj" />
 	</ItemGroup>
 
 </Project>
