@@ -83,6 +83,6 @@ In case you want to have multiple canvases on the same page, you can use the `Ca
 
 You simply have to get a reference to the `CanvasManager` and then call the `CreateCanvas` passing an instance of `CanvasCreationOptions` with the desired parameters. 
 
-For a complete sample, check the [./samples](./samples) folder. 
+The [./samples](./samples) folder contains some examples of how to setup the canvas and draw some cool stuff :)
 
 A sample game can be found here: [Blazeroids](https://github.com/mizrael/Blazeroids)
