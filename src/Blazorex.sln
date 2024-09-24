@@ -9,6 +9,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3408
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazorex.Samples.DoomFire", "..\samples\Blazorex.Samples.DoomFire\Blazorex.Samples.DoomFire.csproj", "{13296A87-1CF6-449E-9FFD-58AD34C99541}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazorex.Samples.SimpleCanvas", "..\samples\Blazorex.Samples.SimpleCanvas\Blazorex.Samples.SimpleCanvas.csproj", "{373C72A6-BF2D-432F-A0AD-74854E275BC3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazorex.Samples.MouseCoords", "..\samples\Blazorex.Samples.MouseCoords\Blazorex.Samples.MouseCoords.csproj", "{562CE073-1AF6-4E33-B84D-2C078E0F05EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,12 +27,22 @@ Global
 		{13296A87-1CF6-449E-9FFD-58AD34C99541}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13296A87-1CF6-449E-9FFD-58AD34C99541}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13296A87-1CF6-449E-9FFD-58AD34C99541}.Release|Any CPU.Build.0 = Release|Any CPU
+		{373C72A6-BF2D-432F-A0AD-74854E275BC3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{373C72A6-BF2D-432F-A0AD-74854E275BC3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{373C72A6-BF2D-432F-A0AD-74854E275BC3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{373C72A6-BF2D-432F-A0AD-74854E275BC3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{562CE073-1AF6-4E33-B84D-2C078E0F05EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{562CE073-1AF6-4E33-B84D-2C078E0F05EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{562CE073-1AF6-4E33-B84D-2C078E0F05EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{562CE073-1AF6-4E33-B84D-2C078E0F05EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{13296A87-1CF6-449E-9FFD-58AD34C99541} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
+		{373C72A6-BF2D-432F-A0AD-74854E275BC3} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
+		{562CE073-1AF6-4E33-B84D-2C078E0F05EC} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4E38A4B6-BFE1-4015-B014-748F68320AC4}

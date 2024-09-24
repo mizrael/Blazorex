@@ -18,24 +18,11 @@
     float _lastUpdate = 0;
     float _elapsedTime = 0;
 
-    private CanvasBase _fireCanvas;
-    private Services.FireRenderer _fireRenderer;
-    private int _fireWidth = 256;
-    private int _fireHeight = 64;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
 
-        _canvasManager.CreateCanvas("fire", new CanvasCreationOptions()
-        {
-            Hidden = true,
-            Width = _fireWidth,
-            Height = _fireHeight,
-            OnCanvasReady = this.OnFireCanvasReady,
-            OnFrameReady = this.OnFireCanvasFrameReady,
-        });
         _canvasManager.CreateCanvas("main", new CanvasCreationOptions()
         {
             Hidden = false,
@@ -46,18 +33,6 @@
             OnMouseMove = this.OnMainCanvasMouseMove,
             OnResize = this.OnMainCanvasResize,
         });
-    }
-
-    private void OnFireCanvasReady(CanvasBase canvas)
-    {
-        _fireCanvas = canvas;
-        _fireRenderer = new Services.FireRenderer(canvas.RenderContext, _fireWidth, _fireHeight);
-    }
-
-    private void OnFireCanvasFrameReady(float timeStamp)
-    {
-        _fireRenderer.Update();
-        _fireRenderer.Render();
     }
 
     private void OnMainCanvasReady(CanvasBase canvas)
@@ -90,8 +65,6 @@
     private void Render()
     {
         _context.ClearRect(0, 0, _width, _height);
-
-        _context.DrawImage(_fireCanvas.ElementReference, 0, 0, _width, _height);
 
         var fps = 1000f / _elapsedTime;
         _context.Font = "24px verdana";
