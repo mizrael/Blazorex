@@ -4,7 +4,7 @@ public class FireRenderer
 {
     private readonly IRenderContext _context;
 
-    private readonly int _renderTarget;
+    private int _renderTarget = -1;
     private readonly int _width;
     private readonly int _height;
     private readonly byte fireStartIntensity = 36;
@@ -22,13 +22,16 @@ public class FireRenderer
         _width = width;
         _height = height;
 
-        _renderTarget = _context.CreateImageData(_width, _height);
-
         fireColorData = new byte[_width * _height * 4];
 
         fireData = new byte[_width * _height];
         for (int i = 0; i < fireData.Length; i++)
             fireData[i] = fireStartIntensity;
+    }
+
+    public async ValueTask InitAsync()
+    {
+        _renderTarget = await _context.CreateImageDataAsync(_width, _height);
     }
 
     public void Update()

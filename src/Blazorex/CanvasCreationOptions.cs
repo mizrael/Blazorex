@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System;
+using System.Threading.Tasks;
 
 namespace Blazorex;
 
@@ -26,6 +27,14 @@ public readonly struct CanvasCreationOptions
     /// fired when the canvas is ready to process events
     /// </summary>
     public Action<CanvasBase> OnCanvasReady { get; init; }
+
+    /// <summary>
+    /// async version of <see cref="OnCanvasReady"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="OnCanvasReady"/> will ALWAYS take precedence over this, if both are set.
+    /// </remarks>
+    public Func<CanvasBase, ValueTask> OnCanvasReadyAsync { get; init; }
 
     /// <summary>
     /// fired at every frame refresh

@@ -26,7 +26,7 @@ namespace Blazorex
             var managedInstance = DotNetObjectReference.Create(this);
             await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", Id, managedInstance);
 
-            this.RenderContext = new RenderContext2D(Id, this.JSRuntime as IJSInProcessRuntime);
+            this.RenderContext = new RenderContext2D(Id, this.JSRuntime);
                         
             await this.OnCanvasReady.InvokeAsync(this);
         }
@@ -37,7 +37,7 @@ namespace Blazorex
         public async ValueTask UpdateFrame(float timeStamp)
         {
             await this.OnFrameReady.InvokeAsync(timeStamp);
-            this.RenderContext.ProcessBatch();
+            await this.RenderContext.ProcessBatchAsync();
         }
 
         [JSInvokable]

@@ -33,7 +33,7 @@
             Hidden = true,
             Width = _fireWidth,
             Height = _fireHeight,
-            OnCanvasReady = this.OnFireCanvasReady,
+            OnCanvasReadyAsync = this.OnFireCanvasReady,
             OnFrameReady = this.OnFireCanvasFrameReady,
         });
         _canvasManager.CreateCanvas("main", new CanvasCreationOptions()
@@ -48,10 +48,11 @@
         });
     }
 
-    private void OnFireCanvasReady(CanvasBase canvas)
+    private async ValueTask OnFireCanvasReady(CanvasBase canvas)
     {
         _fireCanvas = canvas;
         _fireRenderer = new Services.FireRenderer(canvas.RenderContext, _fireWidth, _fireHeight);
+        await _fireRenderer.InitAsync();
     }
 
     private void OnFireCanvasFrameReady(float timeStamp)
