@@ -3,17 +3,19 @@ using Microsoft.JSInterop;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Blazorex
 {
     internal class RenderContext2D : IRenderContext
     {
         private readonly string _id;
-        private readonly IJSInProcessRuntime _jsRuntime;
+        private readonly IJSRuntime _jsRuntime;
+        private readonly IJSInProcessRuntime _inProcessJsRuntime;
 
         private readonly Queue<JsOp> _jsOps = new();
 
-        public RenderContext2D(string id, IJSInProcessRuntime jsRuntime)
+        public RenderContext2D(string id, IJSRuntime jsRuntime)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -22,6 +24,7 @@ namespace Blazorex
 
             _id = id;
             _jsRuntime = jsRuntime;
+            _inProcessJsRuntime = jsRuntime as IJSInProcessRuntime;
         }
 
         #region private methods
@@ -32,23 +35,40 @@ namespace Blazorex
         private void SetProperty(string property, object value)
             => _jsOps.Enqueue(JsOp.PropertyCall(property, value));
 
+        private async ValueTask InvokeVoid(string identifier, params object?[]? args)
+        {
+            if(_inProcessJsRuntime is not null)
+                _inProcessJsRuntime.InvokeVoid(identifier, args);
+            else
+                await _jsRuntime.InvokeVoidAsync(identifier, args);
+        }
+
+        private ValueTask<T> Invoke<T>(string identifier, params object?[]? args)
+        {
+            if (_inProcessJsRuntime is not null)
+                return ValueTask.FromResult(_inProcessJsRuntime.Invoke<T>(identifier, args));
+            else
+                return _jsRuntime.InvokeAsync<T>(identifier, args);
+        }
+
         #endregion private methods
 
         #region public methods
 
-        void IRenderContext.ProcessBatch()
+        async ValueTask IRenderContext.ProcessBatchAsync()
         {
             var payload = JsonSerializer.Serialize(_jsOps);
             _jsOps.Clear();
-            _jsRuntime.InvokeVoid("Blazorex.processBatch", _id, payload);
+
+            await InvokeVoid("Blazorex.processBatch", _id, payload);
         }
 
-        internal T DirectCall<T>(string method, params object[] args)
+        internal ValueTask<T> DirectCall<T>(string method, params object[] args)
         {
             var payload = string.Empty;
             if (args is not null && args.Length != 0)
                 payload = JsonSerializer.Serialize(args);
-            var result = _jsRuntime.Invoke<T>("Blazorex.directCall", _id, method, payload);
+            var result = Invoke<T>("Blazorex.directCall", _id, method, payload);
             return result;
         }
 
@@ -107,13 +127,13 @@ namespace Blazorex
                 this.Call("fillText", text, x, y);
         }
 
-        public int CreateImageData(int width, int height)
-            => _jsRuntime.Invoke<int>("Blazorex.createImageData", _id, width, height);
+        public ValueTask<int> CreateImageDataAsync(int width, int height)
+            => Invoke<int>("Blazorex.createImageData", _id, width, height);
 
         public void PutImageData(int imageDataId, byte[] data, double x, double y)
-            => _jsRuntime.InvokeVoid("Blazorex.putImageData", _id, imageDataId, data, x, y);
+            => InvokeVoid("Blazorex.putImageData", _id, imageDataId, data, x, y);
 
-        public TextMetrics MeasureText(string text)
+        public ValueTask<TextMetrics> MeasureText(string text)
             => DirectCall<TextMetrics>("measureText", text);
 
         public void Translate(float x, float y)

@@ -4,9 +4,19 @@
     <CascadingValue Value=@this>
     @foreach (var (name, options) in _names)
     {
+        if(options.OnCanvasReadyAsync is not null && options.OnCanvasReady is not null)
+        {
+            throw new InvalidOperationException($"Cannot set both {nameof(options.OnCanvasReady)} and {nameof(options.OnCanvasReadyAsync)}");
+        }
+
+        EventCallback<CanvasBase> onCanvasReady = 
+            options.OnCanvasReadyAsync != null ? 
+            EventCallback.Factory.Create<CanvasBase>(this, async (canvas) => await options.OnCanvasReadyAsync(canvas)) : 
+            EventCallback.Factory.Create<CanvasBase>(this, options.OnCanvasReady);
+       
         <div id="@(name)Container" class="blazorex-canvas-container" hidden="@options.Hidden">
             <Canvas @ref="_canvases[name]"
-                    OnCanvasReady="@options.OnCanvasReady"
+                    OnCanvasReady="@onCanvasReady"
                     OnFrameReady="@options.OnFrameReady"
                     OnMouseMove="@options.OnMouseMove"
                     OnKeyDown="@options.OnKeyDown"

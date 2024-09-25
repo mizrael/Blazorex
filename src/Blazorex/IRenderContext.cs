@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
+using System.Threading.Tasks;
 
 namespace Blazorex
 {
     public interface IRenderContext
     {
-        internal void ProcessBatch();
+        internal ValueTask ProcessBatchAsync();
 
         void ClearRect(float x, float y, float width, float height);
         void FillRect(float x, float y, float width, float height);
@@ -18,9 +19,9 @@ namespace Blazorex
 
         void StrokeText(string text, float x, float y, float? maxWidth = null);
         void FillText(string text, float x, float y, float? maxWidth = null);
-        TextMetrics MeasureText(string text);
+        ValueTask<TextMetrics> MeasureText(string text);
 
-        int CreateImageData(int width, int height);
+        ValueTask<int> CreateImageDataAsync(int width, int height);
         void PutImageData(int imageDataId, byte[] data, double x, double y);
 
         void BeginPath();
