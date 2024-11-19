@@ -158,6 +158,9 @@ namespace Blazorex
 
         public void MoveTo(float x, float y)
             => this.Call("moveTo", x, y);
+        
+        public void ArcTo(float x1, float y1, float x2, float y2, float radius)
+            => this.Call("arcTo", x1, y1, x2, y2, radius);
 
         public void ClosePath()
             => this.Call("closePath");

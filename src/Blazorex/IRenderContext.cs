@@ -35,6 +35,7 @@ namespace Blazorex
         void Save();
         void Restore();
         void Arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise = false);
+        void ArcTo(float x1, float y1, float x2, float y2, float radius);
         void LineTo(float x, float y);
         void MoveTo(float x, float y);
         void ClosePath();
