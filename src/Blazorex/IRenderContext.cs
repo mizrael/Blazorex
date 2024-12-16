@@ -50,5 +50,7 @@ namespace Blazorex
         string Font { get; set; }
 
         TextAlign TextAlign { get; set; }
+        
+        void SetLineDash(float[] segments);
     }
 }

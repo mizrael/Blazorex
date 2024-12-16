@@ -177,6 +177,9 @@ namespace Blazorex
         public void Rect(float x, float y, float width, float height)
             => this.Call("rect", x, y, width, height);
 
+        public void SetLineDash(float[] segments)
+            => this.Call("setLineDash", segments);
+        
         #endregion public methods
 
         #region properties
