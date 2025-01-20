@@ -239,6 +239,17 @@ namespace Blazorex
             }
         }
 
+        private TextBaseline _textBaseline;
+        public TextBaseline TextBaseline
+        {
+            get => _textBaseline;
+            set
+            {
+                _textBaseline = value;
+                this.SetProperty("textBaseline", value.Value);
+            }
+        }
+
         #endregion properties
     }
 }
