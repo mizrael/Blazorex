@@ -10,6 +10,17 @@ window.Blazorex = (() => {
             return;
         }
 
+        canvas.addEventListener("wheel", (e) => {
+            console.log(e);
+            const wheelData = {
+                deltaX: e.deltaX,
+                deltaY: e.deltaY,
+                clientX: e.clientX,
+                clientY: e.clientY
+            };
+            managedInstance.invokeMethodAsync('Wheel', wheelData);
+        });
+
         _contexts[id] = {
             id: id,
             context: canvas.getContext("2d"),

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Threading.Tasks;
 
@@ -46,5 +47,7 @@ public readonly struct CanvasCreationOptions
 
 
     public Action<MouseCoords> OnMouseMove { get; init; }
+    public Action<WheelDelta> OnWheel { get; init; }
+
     public Action<Size> OnResize { get; init; }
 }
