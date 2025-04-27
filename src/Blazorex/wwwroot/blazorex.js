@@ -132,7 +132,7 @@ window.Blazorex = (() => {
             clientX: e.clientX,
             clientY: e.clientY,
             offsetX: e.offsetX,
-            offsetX: e.offsetY
+            offsetY: e.offsetY
         };
         for (let ctx in _contexts) {
             _contexts[ctx].managedInstance.invokeMethodAsync('MouseMoved', coords);

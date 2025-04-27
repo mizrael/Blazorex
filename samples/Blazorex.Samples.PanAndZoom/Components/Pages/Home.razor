@@ -22,11 +22,7 @@
         y = 0,
         scale = 1
     };
-    MouseCoords _lastClickCoords = new()
-    {
-        ClientX = 0,
-        ClientY = 0
-    };
+    MouseCoords _lastClickCoords = MouseCoords.Zero;
     bool _isMouseDown = false;
 
     protected override void OnAfterRender(bool firstRender)
@@ -57,11 +53,8 @@
                         scale = _viewportTransform.scale
                     };
                 }
-                _lastClickCoords = new MouseCoords()
-                {
-                    ClientX = evt.ClientX,
-                    ClientY = evt.ClientY
-                };
+
+                _lastClickCoords = new MouseCoords(evt.ClientX, evt.ClientY);
             }
         });
 

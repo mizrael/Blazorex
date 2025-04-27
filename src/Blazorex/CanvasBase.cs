@@ -42,6 +42,12 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     }
 
     [JSInvokable]
+    public async ValueTask Resized(int width, int height)
+    {
+        await this.OnResize.InvokeAsync(new Size(width, height));
+    }
+
+    [JSInvokable]
     public async ValueTask KeyPressed(int keyCode)
     {
         await this.OnKeyDown.InvokeAsync(keyCode);
@@ -57,12 +63,6 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     public async ValueTask MouseMoved(MouseCoords coords)
     {
         await this.OnMouseMove.InvokeAsync(coords);
-    }
-
-    [JSInvokable]
-    public async ValueTask Resized(int width, int height)
-    {
-        await this.OnResize.InvokeAsync(new Size(width, height));
     }
 
     [JSInvokable]
