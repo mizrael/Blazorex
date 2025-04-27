@@ -11,7 +11,6 @@ window.Blazorex = (() => {
         }
 
         canvas.addEventListener("wheel", (e) => {
-            console.log(e);
             const wheelData = {
                 deltaX: e.deltaX,
                 deltaY: e.deltaY,
@@ -19,6 +18,23 @@ window.Blazorex = (() => {
                 clientY: e.clientY
             };
             managedInstance.invokeMethodAsync('Wheel', wheelData);
+        });
+
+        canvas.addEventListener("mousedown", (e) => {
+            const clickData = {
+                clientX: e.clientX,
+                clientY: e.clientY,
+                button: e.button,
+            };
+            managedInstance.invokeMethodAsync('MouseDown', clickData);
+        });
+        canvas.addEventListener("mouseup", (e) => {
+            const clickData = {
+                clientX: e.clientX,
+                clientY: e.clientY,
+                button: e.button,
+            };
+            managedInstance.invokeMethodAsync('MouseUp', clickData);
         });
 
         _contexts[id] = {
@@ -113,8 +129,10 @@ window.Blazorex = (() => {
     };
     window.onmousemove = (e) => {
         const coords = {
-            X: e.offsetX,
-            Y: e.offsetY
+            clientX: e.clientX,
+            clientY: e.clientY,
+            offsetX: e.offsetX,
+            offsetX: e.offsetY
         };
         for (let ctx in _contexts) {
             _contexts[ctx].managedInstance.invokeMethodAsync('MouseMoved', coords);

@@ -68,7 +68,19 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async ValueTask Wheel(WheelDelta evt)
     {
-        await this.OnWheel.InvokeAsync(evt);
+        await this.OnMouseWheel.InvokeAsync(evt);
+    }
+
+    [JSInvokable]
+    public async ValueTask MouseDown(MouseButtonData evt)
+    {
+        await this.OnMouseDown.InvokeAsync(evt);
+    }
+
+    [JSInvokable]
+    public async ValueTask MouseUp(MouseButtonData evt)
+    {
+        await this.OnMouseUp.InvokeAsync(evt);
     }
 
     #endregion JS interop
@@ -85,13 +97,19 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     public EventCallback<MouseCoords> OnMouseMove { get; set; }
 
     [Parameter]
+    public EventCallback<WheelDelta> OnMouseWheel { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseButtonData> OnMouseDown { get; set; }
+
+    [Parameter]
+    public EventCallback<MouseButtonData> OnMouseUp { get; set; }
+
+    [Parameter]
     public EventCallback<Size> OnResize { get; set; }
 
     [Parameter]
-    public EventCallback<float> OnFrameReady { get; set; }
-
-    [Parameter]
-    public EventCallback<WheelDelta> OnWheel { get; set; }
+    public EventCallback<float> OnFrameReady { get; set; }    
 
     [Parameter]
     public EventCallback<CanvasBase> OnCanvasReady { get; set; }

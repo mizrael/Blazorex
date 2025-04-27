@@ -22,6 +22,12 @@
         y = 0,
         scale = 1
     };
+    MouseCoords _lastClickCoords = new()
+    {
+        ClientX = 0,
+        ClientY = 0
+    };
+    bool _isMouseDown = false;
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -35,7 +41,28 @@
             Height = _height,
             OnCanvasReady = this.OnMainCanvasReady,
             OnFrameReady = this.OnMainFrameReady,
-            OnWheel = this.OnWheel
+            OnMouseWheel = this.OnMouseWheel,
+            OnMouseDown = this.OnMouseDown,
+            OnMouseUp = this.OnMouseUp,
+            OnMouseMove = (MouseCoords evt) =>
+            {
+                if (_isMouseDown)
+                {
+                    var newX = evt.ClientX - _lastClickCoords.ClientX;
+                    var newY = evt.ClientY - _lastClickCoords.ClientY;
+                    _viewportTransform = new()
+                    {
+                        x = _viewportTransform.x + newX,
+                        y = _viewportTransform.y + newY,
+                        scale = _viewportTransform.scale
+                    };
+                }
+                _lastClickCoords = new MouseCoords()
+                {
+                    ClientX = evt.ClientX,
+                    ClientY = evt.ClientY
+                };
+            }
         });
 
         base.OnAfterRender(firstRender);
@@ -51,8 +78,16 @@
         this.Render();
     }
 
+    private void OnMouseDown(MouseButtonData evt)
+    {
+        _isMouseDown = true;
+    }
+    private void OnMouseUp(MouseButtonData evt)
+    {
+        _isMouseDown = false;
+    }
 
-    private void OnWheel(WheelDelta evt)
+    private void OnMouseWheel(WheelDelta evt)
     {
         var newScale = _viewportTransform.scale + evt.DeltaY * -0.001f;
         var newX = evt.ClientX - (evt.ClientX - _viewportTransform.x) * (newScale / _viewportTransform.scale);
@@ -81,6 +116,7 @@
         _context.Font = "24px verdana";
         _context.FillStyle = "yellow";
         _context.FillText("Use the wheel to change the zoom", 20, 20);
+        _context.FillText("Click to pan the view", 20, 80);
 
         _context.SetTransform(_viewportTransform.scale, 0, 0, _viewportTransform.scale, _viewportTransform.x, _viewportTransform.y);
         DrawRect(100, 100, 100, 100, "red");
