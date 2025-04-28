@@ -2,14 +2,14 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<PackageVersion>1.1.3</PackageVersion>
+		<PackageVersion>1.1.4</PackageVersion>
 		<IsPackable>true</IsPackable>
 		<Authors>davidguida</Authors>
 		<Product>Blazorex</Product>
 		<NeutralLanguage>en-US</NeutralLanguage>
 		<Title>Blazorex</Title>
 		<PackageDescription>Blazorex is an HTML Canvas wrapper library for Blazor, written with .NET.</PackageDescription>
-		<Copyright>Copyright 2023</Copyright>
+		<Copyright>Copyright 2025</Copyright>
 		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<PackageTags>blazor dotnet dotnet-core canvas gamedev</PackageTags>

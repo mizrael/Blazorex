@@ -1,0 +1,117 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<CanvasManager @ref="_canvasManager" />
+
+@code
+{
+    CanvasManager _canvasManager;
+    IRenderContext _context;
+    int _width = 800;
+    int _height = 600;
+
+    private record struct ViewportTransform {
+        public float x;
+        public float y;
+        public float scale;
+    }
+    ViewportTransform _viewportTransform = new()
+    {
+        x = 0,
+        y = 0,
+        scale = 1
+    };
+    MouseCoords _lastClickCoords = MouseCoords.Zero;
+    bool _isMouseDown = false;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _canvasManager.CreateCanvas("main", new CanvasCreationOptions()
+        {
+            Hidden = false,
+            Width = _width,
+            Height = _height,
+            OnCanvasReady = this.OnMainCanvasReady,
+            OnFrameReady = this.OnMainFrameReady,
+            OnMouseWheel = this.OnMouseWheel,
+            OnMouseDown = this.OnMouseDown,
+            OnMouseUp = this.OnMouseUp,
+            OnMouseMove = (MouseCoords evt) =>
+            {
+                if (_isMouseDown)
+                {
+                    var newX = evt.ClientX - _lastClickCoords.ClientX;
+                    var newY = evt.ClientY - _lastClickCoords.ClientY;
+                    _viewportTransform = new()
+                    {
+                        x = _viewportTransform.x + (float)newX,
+                        y = _viewportTransform.y + (float)newY,
+                        scale = _viewportTransform.scale
+                    };
+                }
+
+                _lastClickCoords = new MouseCoords(evt.ClientX, evt.ClientY);
+            }
+        });
+
+        base.OnAfterRender(firstRender);
+    }
+
+    private void OnMainCanvasReady(CanvasBase canvas)
+    {
+        _context = canvas.RenderContext;
+    }
+
+    private void OnMainFrameReady(float timestamp)
+    {
+        this.Render();
+    }
+
+    private void OnMouseDown(MouseButtonData evt)
+    {
+        _isMouseDown = true;
+    }
+    private void OnMouseUp(MouseButtonData evt)
+    {
+        _isMouseDown = false;
+    }
+
+    private void OnMouseWheel(WheelDelta evt)
+    {
+        var newScale = _viewportTransform.scale + evt.DeltaY * -0.001f;
+        var newX = evt.ClientX - (evt.ClientX - _viewportTransform.x) * (newScale / _viewportTransform.scale);
+        var newY = evt.ClientY - (evt.ClientY - _viewportTransform.y) * (newScale / _viewportTransform.scale);
+        _viewportTransform = new ()
+        {
+            x = (float)newX,
+            y = (float)newY,
+            scale = (float)newScale
+        };
+    }
+
+    private void DrawRect(float x, float y, float w, float h, string color)
+    {
+        _context.FillStyle = color;
+        _context.FillRect(x,y,w,h);
+    }
+
+    private void Render()
+    {
+        _context.SetTransform(1, 0, 0, 1, 0, 0);
+
+        _context.ClearRect(0, 0, _width, _height);
+
+        DrawRect(0, 0, _width, _height, "rgb(0, 0, 100)");
+        _context.Font = "24px verdana";
+        _context.FillStyle = "yellow";
+        _context.FillText("Use the wheel to change the zoom", 20, 20);
+        _context.FillText("Click to pan the view", 20, 80);
+
+        _context.SetTransform(_viewportTransform.scale, 0, 0, _viewportTransform.scale, _viewportTransform.x, _viewportTransform.y);
+        DrawRect(100, 100, 100, 100, "red");
+    }
+}

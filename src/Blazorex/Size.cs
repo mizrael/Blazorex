@@ -1,4 +1,3 @@
-namespace Blazorex
-{
-    public record struct Size(int Width, int Height);
-}
+namespace Blazorex;
+
+public record struct Size(int Width, int Height);

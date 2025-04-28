@@ -46,5 +46,9 @@ public readonly struct CanvasCreationOptions
 
 
     public Action<MouseCoords> OnMouseMove { get; init; }
+    public Action<WheelDelta> OnMouseWheel { get; init; }
+    public Action<MouseButtonData> OnMouseDown { get; init; }
+    public Action<MouseButtonData> OnMouseUp { get; init; }
+
     public Action<Size> OnResize { get; init; }
 }

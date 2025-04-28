@@ -1,11 +1,10 @@
-﻿namespace Blazorex
+﻿namespace Blazorex;
+
+public abstract record CanvasProperty<T>
 {
-    public abstract record CanvasProperty<T>
+    public T Value { get; }
+    protected CanvasProperty(T value)
     {
-        public T Value { get; }
-        protected CanvasProperty(T value)
-        {
-            this.Value = value;
-        }
+        this.Value = value;
     }
 }
