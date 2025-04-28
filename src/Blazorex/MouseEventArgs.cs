@@ -6,9 +6,9 @@ namespace Blazorex;
 [JsonConverter(typeof(MouseCoordsConverter))]
 public readonly struct MouseCoords
 {
-    public MouseCoords(int clientX, int clientY) : this(clientX, clientY, 0, 0) { }
+    public MouseCoords(double clientX, double clientY) : this(clientX, clientY, 0, 0) { }
 
-    public MouseCoords(int clientX, int clientY, int offsetX, int offsetY)
+    public MouseCoords(double clientX, double clientY, double offsetX, double offsetY)
     {
         this.ClientX = clientX;
         this.ClientY = clientY;
@@ -16,13 +16,13 @@ public readonly struct MouseCoords
         this.OffsetY = offsetY;
     }
 
-    public readonly int ClientX;
+    public readonly double ClientX;
 
-    public readonly int ClientY;
+    public readonly double ClientY;
 
-    public readonly int OffsetX;
+    public readonly double OffsetX;
 
-    public readonly int OffsetY;
+    public readonly double OffsetY;
 
     public static readonly MouseCoords Zero = new(0, 0, 0, 0);
 }
@@ -30,7 +30,7 @@ public readonly struct MouseCoords
 [JsonConverter(typeof(MouseButtonDataConverter))]
 public readonly struct MouseButtonData
 {
-    public MouseButtonData(int clientX, int clientY, int button)
+    public MouseButtonData(double clientX, double clientY, int button)
     {
         this.ClientX = clientX;
         this.ClientY = clientY;
@@ -39,9 +39,9 @@ public readonly struct MouseButtonData
 
     public readonly int Button;
 
-    public readonly int ClientX;
+    public readonly double ClientX;
 
-    public readonly int ClientY;
+    public readonly double ClientY;
 
     public static readonly MouseButtonData Zero = new(0, 0, 0);
 }
@@ -50,7 +50,7 @@ public readonly struct MouseButtonData
 public readonly struct WheelDelta
 {
 
-    public WheelDelta(int clientX, int clientY, int deltaX, int deltaY)
+    public WheelDelta(double clientX, double clientY, double deltaX, double deltaY)
     {
         this.ClientX = clientX;
         this.ClientY = clientY;
@@ -58,13 +58,13 @@ public readonly struct WheelDelta
         this.DeltaY = deltaY;
     }
 
-    public readonly int DeltaX;
+    public readonly double DeltaX;
 
-    public readonly int DeltaY;
+    public readonly double DeltaY;
 
-    public readonly int ClientX;
+    public readonly double ClientX;
 
-    public readonly int ClientY;
+    public readonly double ClientY;
 
     public static readonly WheelDelta Zero = new(0, 0, 0, 0);
 }

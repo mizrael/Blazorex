@@ -8,7 +8,9 @@ public class MouseButtonDataConverter : JsonConverter<MouseButtonData>
 {
     public override MouseButtonData Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        int clientX = 0, clientY = 0, button = 0;
+        double clientX = 0, clientY = 0;
+        int button = 0;
+
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException();
 
@@ -28,10 +30,10 @@ public class MouseButtonDataConverter : JsonConverter<MouseButtonData>
                         button = reader.GetInt32();
                         break;
                     case "clientx":
-                        clientX = reader.GetInt32();
+                        clientX = reader.GetDouble();
                         break;
                     case "clienty":
-                        clientY = reader.GetInt32();
+                        clientY = reader.GetDouble();
                         break;
                 }
             }

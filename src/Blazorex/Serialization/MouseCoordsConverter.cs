@@ -8,9 +8,11 @@ public class MouseCoordsConverter : JsonConverter<MouseCoords>
 {
     public override MouseCoords Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        int clientX = 0, clientY = 0, offsetX = 0, offsetY = 0;
+        double clientX = 0, clientY = 0, offsetX = 0, offsetY = 0;
+
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException();
+
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.EndObject)
@@ -22,16 +24,16 @@ public class MouseCoordsConverter : JsonConverter<MouseCoords>
                 switch (propertyName.ToLower())
                 {
                     case "clientx":
-                        clientX = reader.GetInt32();
+                        clientX = reader.GetDouble();
                         break;
                     case "clienty":
-                        clientY = reader.GetInt32();
+                        clientY = reader.GetDouble();
                         break;
                     case "offsetx":
-                        offsetX = reader.GetInt32();
+                        offsetX = reader.GetDouble();
                         break;
                     case "offsety":
-                        offsetY = reader.GetInt32();
+                        offsetY = reader.GetDouble();
                         break;
                 }
             }

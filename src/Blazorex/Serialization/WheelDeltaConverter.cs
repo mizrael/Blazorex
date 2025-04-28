@@ -8,7 +8,7 @@ public class WheelDeltaConverter : JsonConverter<WheelDelta>
 {
     public override WheelDelta Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        int deltaX = 0, deltaY = 0, clientX = 0, clientY = 0;
+        double deltaX = 0, deltaY = 0, clientX = 0, clientY = 0;
 
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException();
@@ -26,16 +26,16 @@ public class WheelDeltaConverter : JsonConverter<WheelDelta>
                 switch (propertyName.ToLower())
                 {
                     case "deltax":
-                        deltaX = reader.GetInt32();
+                        deltaX = reader.GetDouble();
                         break;
                     case "deltay":
-                        deltaY = reader.GetInt32();
+                        deltaY = reader.GetDouble();
                         break;
                     case "clientx":
-                        clientX = reader.GetInt32();
+                        clientX = reader.GetDouble();
                         break;
                     case "clienty":
-                        clientY = reader.GetInt32();
+                        clientY = reader.GetDouble();
                         break;
                 }
             }

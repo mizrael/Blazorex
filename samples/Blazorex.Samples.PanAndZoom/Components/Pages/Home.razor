@@ -48,8 +48,8 @@
                     var newY = evt.ClientY - _lastClickCoords.ClientY;
                     _viewportTransform = new()
                     {
-                        x = _viewportTransform.x + newX,
-                        y = _viewportTransform.y + newY,
+                        x = _viewportTransform.x + (float)newX,
+                        y = _viewportTransform.y + (float)newY,
                         scale = _viewportTransform.scale
                     };
                 }
@@ -87,9 +87,9 @@
         var newY = evt.ClientY - (evt.ClientY - _viewportTransform.y) * (newScale / _viewportTransform.scale);
         _viewportTransform = new ()
         {
-            x = newX,
-            y = newY,
-            scale = newScale
+            x = (float)newX,
+            y = (float)newY,
+            scale = (float)newScale
         };
     }
 
