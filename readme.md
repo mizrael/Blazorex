@@ -85,6 +85,8 @@ You simply have to get a reference to the `CanvasManager` and then call the `Cre
 
 For a complete list of options for Canvas initialization, see [here](https://github.com/mizrael/Blazorex/blob/master/src/Blazorex/CanvasCreationOptions.cs).
 
+For the complete documentation, check the [official website](https://deepwiki.com/mizrael/blazorex)
+
 The [./samples](./samples) folder contains some examples of how to setup the canvas and draw some cool stuff :)
 
 A sample game can be found here: [Blazeroids](https://github.com/mizrael/Blazeroids)
