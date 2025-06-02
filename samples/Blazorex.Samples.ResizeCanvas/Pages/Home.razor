@@ -1,0 +1,120 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+<img @ref="_spritesheet" hidden src="blazor.png" />
+
+<CanvasManager @ref="_canvasManager" />
+
+<button class="btn btn-primary" @onclick="Resize">Resize</button>
+
+@code
+{
+    CanvasManager _canvasManager;
+
+    ElementReference _spritesheet;
+    IRenderContext _context;
+
+    int _width = 800;
+    int _height = 600;
+
+    float _x = 400;
+    float _y = 300;
+
+    float _dx = 1;
+    float _dy = 1;
+    float _spriteSpeed = 0.25f;
+    float _spriteMaxSpeed = 5f;
+
+    int _spriteWidth = 200;
+    int _spriteHeight = 200;
+
+    float _lastUpdate = 0;
+    float _elapsedTime = 0;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        _canvasManager.CreateCanvas("main", new CanvasCreationOptions()
+        {
+            Hidden = false,
+            Width = _width,
+            Height = _height,
+            OnCanvasReady = this.OnMainCanvasReady,
+            OnFrameReady = this.OnMainFrameReady,
+            OnResize = this.OnMainCanvasResize,
+        });
+    }
+
+    private void OnMainCanvasReady(CanvasBase canvas)
+    {
+        _context = canvas.RenderContext;
+    }
+
+    private void OnMainFrameReady(float timestamp)
+    {
+        this.Update(timestamp);
+        this.Render();
+    }
+
+    private void OnMainCanvasResize(Size windowSize)
+    {
+
+    }
+
+    private void Resize()
+    {
+        var sizePresents = new List<(int width, int height)> 
+        {
+            (1920, 1080),
+            (1080, 1920),
+            (800, 600),
+            (600, 800),
+            (400, 300),
+            (300, 400),
+        };
+
+        var getRandomSize = () => sizePresents[Random.Shared.Next(sizePresents.Count)];
+
+        var (width, height) = getRandomSize();
+
+        _width = width;
+        _height = height;
+        _context.Resize(_width, _height);
+    }
+
+    private void Update(float timeStamp)
+    {
+        _elapsedTime = timeStamp - _lastUpdate;
+        _lastUpdate = timeStamp;
+
+        if (_x + _spriteWidth >= _width || _x < 0)
+            _dx = -_dx;
+
+        if (_y + _spriteHeight >= _height || _y < 0)
+            _dy = -_dy;
+
+        var speed = Math.Clamp(_spriteSpeed * _elapsedTime, 0, _spriteMaxSpeed);
+        _x += _dx * speed;
+        _y += _dy * speed;
+    }
+
+    private void Render()
+    {        
+        _context.ClearRect(0, 0, _width, _height);
+        
+        // fills the background with a dark blue color
+        _context.FillStyle = "rgb(0, 0, 100)";
+        _context.FillRect(0, 0, _width, _height);
+
+        // draws a yellow border around the sprite
+        _context.StrokeStyle = "rgb(255, 255,0)";
+        _context.LineWidth = 3;
+        _context.StrokeRect(_x, _y, _spriteWidth, _spriteHeight);
+
+        // draws the sprite
+        _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);
+    }
+}

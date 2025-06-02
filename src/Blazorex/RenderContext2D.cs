@@ -183,6 +183,9 @@ internal class RenderContext2D : IRenderContext
     public void SetLineDash(float[] segments)
         => this.Call("setLineDash", segments);
     
+    public void Resize(int width, int height)
+        => InvokeVoid("Blazorex.resizeCanvas", _id, width, height);
+    
     #endregion public methods
 
     #region properties
