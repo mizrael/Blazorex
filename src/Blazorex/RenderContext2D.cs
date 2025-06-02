@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Blazorex;
 
@@ -19,7 +19,10 @@ internal class RenderContext2D : IRenderContext
     {
         if (string.IsNullOrWhiteSpace(id))
         {
-            throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace.", nameof(id));
+            throw new ArgumentException(
+                $"'{nameof(id)}' cannot be null or whitespace.",
+                nameof(id)
+            );
         }
 
         _id = id;
@@ -29,15 +32,15 @@ internal class RenderContext2D : IRenderContext
 
     #region private methods
 
-    private void Call(string method, params object[] args)
-        => _jsOps.Enqueue(JsOp.FunctionCall(method, args));
+    private void Call(string method, params object[] args) =>
+        _jsOps.Enqueue(JsOp.FunctionCall(method, args));
 
-    private void SetProperty(string property, object value)
-        => _jsOps.Enqueue(JsOp.PropertyCall(property, value));
+    private void SetProperty(string property, object value) =>
+        _jsOps.Enqueue(JsOp.PropertyCall(property, value));
 
     private async ValueTask InvokeVoid(string identifier, params object?[]? args)
     {
-        if(_inProcessJsRuntime is not null)
+        if (_inProcessJsRuntime is not null)
             _inProcessJsRuntime.InvokeVoid(identifier, args);
         else
             await _jsRuntime.InvokeVoidAsync(identifier, args);
@@ -72,17 +75,17 @@ internal class RenderContext2D : IRenderContext
         return result;
     }
 
-    public void SetTransform(float a, float b, float c, float d, float e, float f)
-        => this.Call("setTransform", a, b, c, d, e, f);
-    
-    public void ClearRect(float x, float y, float width, float height)
-        => this.Call("clearRect", x, y, width, height);
+    public void SetTransform(float a, float b, float c, float d, float e, float f) =>
+        this.Call("setTransform", a, b, c, d, e, f);
 
-    public void StrokeRect(float x, float y, float width, float height)
-         => this.Call("strokeRect", x, y, width, height);
+    public void ClearRect(float x, float y, float width, float height) =>
+        this.Call("clearRect", x, y, width, height);
 
-    public void FillRect(float x, float y, float width, float height)
-        => this.Call("fillRect", x, y, width, height);
+    public void StrokeRect(float x, float y, float width, float height) =>
+        this.Call("strokeRect", x, y, width, height);
+
+    public void FillRect(float x, float y, float width, float height) =>
+        this.Call("fillRect", x, y, width, height);
 
     public object CreatePattern(ElementReference imageRef, RepeatPattern pattern)
     {
@@ -97,21 +100,45 @@ internal class RenderContext2D : IRenderContext
         this.Call("drawImage", innerRef, x, y);
     }
 
-    public void DrawImage(ElementReference imageRef, float x, float y, float imageWidth, float imageHeight)
+    public void DrawImage(
+        ElementReference imageRef,
+        float x,
+        float y,
+        float imageWidth,
+        float imageHeight
+    )
     {
         var innerRef = MarshalReference.Map(imageRef);
 
         this.Call("drawImage", innerRef, x, y, imageWidth, imageHeight);
     }
 
-    public void DrawImage(ElementReference imageRef,
-          float sourceX, float sourceY, float sourceWidth, float sourceHeight,
-          float destX, float destY, float destWidth, float destHeight)
+    public void DrawImage(
+        ElementReference imageRef,
+        float sourceX,
+        float sourceY,
+        float sourceWidth,
+        float sourceHeight,
+        float destX,
+        float destY,
+        float destWidth,
+        float destHeight
+    )
     {
         var innerRef = MarshalReference.Map(imageRef);
 
-        this.Call("drawImage", innerRef, sourceX, sourceY, sourceWidth, sourceHeight,
-                                        destX, destY, destWidth, destHeight);
+        this.Call(
+            "drawImage",
+            innerRef,
+            sourceX,
+            sourceY,
+            sourceWidth,
+            sourceHeight,
+            destX,
+            destY,
+            destWidth,
+            destHeight
+        );
     }
 
     public void StrokeText(string text, float x, float y, float? maxWidth = null)
@@ -130,67 +157,66 @@ internal class RenderContext2D : IRenderContext
             this.Call("fillText", text, x, y);
     }
 
-    public ValueTask<int> CreateImageDataAsync(int width, int height)
-        => Invoke<int>("Blazorex.createImageData", _id, width, height);
+    public ValueTask<int> CreateImageDataAsync(int width, int height) =>
+        Invoke<int>("Blazorex.createImageData", _id, width, height);
 
-    public void PutImageData(int imageDataId, byte[] data, double x, double y)
-        => InvokeVoid("Blazorex.putImageData", _id, imageDataId, data, x, y);
+    public void PutImageData(int imageDataId, byte[] data, double x, double y) =>
+        InvokeVoid("Blazorex.putImageData", _id, imageDataId, data, x, y);
 
-    public ValueTask<TextMetrics> MeasureText(string text)
-        => DirectCall<TextMetrics>("measureText", text);
+    public ValueTask<TextMetrics> MeasureText(string text) =>
+        DirectCall<TextMetrics>("measureText", text);
 
-    public void Translate(float x, float y)
-        => this.Call("translate", x, y);
+    public void Translate(float x, float y) => this.Call("translate", x, y);
 
-    public void Rotate(float angle)
-        => this.Call("rotate", angle);
+    public void Rotate(float angle) => this.Call("rotate", angle);
 
-    public void Scale(float x, float y)
-        => this.Call("scale", x, y);
+    public void Scale(float x, float y) => this.Call("scale", x, y);
 
-    public void BeginPath()
-        => this.Call("beginPath");
+    public void BeginPath() => this.Call("beginPath");
 
-    public void Save()
-        => this.Call("save");
-    public void Restore()
-        => this.Call("restore");
+    public void Save() => this.Call("save");
 
-    public void LineTo(float x, float y)
-        => this.Call("lineTo", x, y);
+    public void Restore() => this.Call("restore");
 
-    public void MoveTo(float x, float y)
-        => this.Call("moveTo", x, y);
-    
-    public void ArcTo(float x1, float y1, float x2, float y2, float radius)
-        => this.Call("arcTo", x1, y1, x2, y2, radius);
+    public void LineTo(float x, float y) => this.Call("lineTo", x, y);
 
-    public void ClosePath()
-        => this.Call("closePath");
+    public void MoveTo(float x, float y) => this.Call("moveTo", x, y);
 
-    public void Fill()
-        => this.Call("fill");
+    public void ArcTo(float x1, float y1, float x2, float y2, float radius) =>
+        this.Call("arcTo", x1, y1, x2, y2, radius);
 
-    public void Stroke()
-        => this.Call("stroke");
+    public void ClosePath() => this.Call("closePath");
 
-    public void Arc(float x, float y, float radius, float startAngle, float endAngle, bool anticlockwise = false)
-        => this.Call("arc", x, y, radius, startAngle, endAngle, anticlockwise);
+    public void Fill() => this.Call("fill");
 
-    public void Rect(float x, float y, float width, float height)
-        => this.Call("rect", x, y, width, height);
+    public void Stroke() => this.Call("stroke");
 
-    public void SetLineDash(float[] segments)
-        => this.Call("setLineDash", segments);
-    
-    public void Resize(int width, int height)
-        => InvokeVoid("Blazorex.resizeCanvas", _id, width, height);
-    
+    public void Arc(
+        float x,
+        float y,
+        float radius,
+        float startAngle,
+        float endAngle,
+        bool anticlockwise = false
+    ) => this.Call("arc", x, y, radius, startAngle, endAngle, anticlockwise);
+
+    public void Rect(float x, float y, float width, float height) =>
+        this.Call("rect", x, y, width, height);
+
+    public void RoundRect(float x, float y, float width, float height, params float[] radii) =>
+        this.Call("roundRect", x, y, width, height, radii.Length == 1 ? radii[0] : radii);
+
+    public void SetLineDash(float[] segments) => this.Call("setLineDash", segments);
+
+    public void Resize(int width, int height) =>
+        InvokeVoid("Blazorex.resizeCanvas", _id, width, height);
+
     #endregion public methods
 
     #region properties
 
     private object _fillStyle;
+
     public object FillStyle
     {
         get => _fillStyle;
@@ -202,6 +228,7 @@ internal class RenderContext2D : IRenderContext
     }
 
     private string _strokeStyle;
+
     public string StrokeStyle
     {
         get => _strokeStyle;
@@ -213,6 +240,7 @@ internal class RenderContext2D : IRenderContext
     }
 
     private int _lineWidth;
+
     public int LineWidth
     {
         get => _lineWidth;
@@ -224,6 +252,7 @@ internal class RenderContext2D : IRenderContext
     }
 
     private string _font;
+
     public string Font
     {
         get => _font;
@@ -235,6 +264,7 @@ internal class RenderContext2D : IRenderContext
     }
 
     private TextAlign _textAlign;
+
     public TextAlign TextAlign
     {
         get => _textAlign;
@@ -246,6 +276,7 @@ internal class RenderContext2D : IRenderContext
     }
 
     private TextBaseline _textBaseline;
+
     public TextBaseline TextBaseline
     {
         get => _textBaseline;
@@ -253,6 +284,18 @@ internal class RenderContext2D : IRenderContext
         {
             _textBaseline = value;
             this.SetProperty("textBaseline", value.Value);
+        }
+    }
+
+    private TextRendering _textRendering;
+
+    public TextRendering TextRendering
+    {
+        get => _textRendering;
+        set
+        {
+            _textRendering = value;
+            this.SetProperty("textRendering", value.Value);
         }
     }
 

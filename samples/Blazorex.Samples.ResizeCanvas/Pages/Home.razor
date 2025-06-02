@@ -45,6 +45,7 @@
             OnCanvasReady = this.OnMainCanvasReady,
             OnFrameReady = this.OnMainFrameReady,
             OnResize = this.OnMainCanvasResize,
+            Alpha = false
         });
     }
 
@@ -109,10 +110,12 @@
         _context.FillStyle = "rgb(0, 0, 100)";
         _context.FillRect(0, 0, _width, _height);
 
-        // draws a yellow border around the sprite
+        // draws a yellow (rounded) border around the sprite
+        _context.BeginPath();
+        _context.RoundRect(_x, _y, _spriteWidth, _spriteHeight, 20, 5, 2, 40);
         _context.StrokeStyle = "rgb(255, 255,0)";
         _context.LineWidth = 3;
-        _context.StrokeRect(_x, _y, _spriteWidth, _spriteHeight);
+        _context.Stroke();
 
         // draws the sprite
         _context.DrawImage(_spritesheet, _x, _y, _spriteWidth, _spriteHeight);

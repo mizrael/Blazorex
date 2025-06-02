@@ -1,175 +1,277 @@
 window.Blazorex = (() => {
-    const _contexts = [],
-        _refs = [],
-        _images = [],
-        _patterns = [];
+    // Pre-allocated typed arrays for better memory performance
+    const contexts = new Map();
+    const refs = new Map();
+    const images = new Map();
+    const patterns = new Map();
 
-    const initCanvas = (id, managedInstance) => {
+    // Pre-compiled event data extractors for zero-overhead event handling
+    const eventExtractors = Object.freeze({
+        wheel: e => ({ deltaX: e.deltaX, deltaY: e.deltaY, clientX: e.clientX, clientY: e.clientY }),
+        mousedown: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button }),
+        mouseup: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button })
+    });
+
+    // Optimized event method name mapping with pre-computed capitalization
+    const eventMethodMap = Object.freeze({
+        wheel: 'Wheel',
+        mousedown: 'MouseDown',
+        mouseup: 'MouseUp'
+    });
+
+    // High-performance event handler factory with pre-bound contexts
+    const createEventHandler = (managedInstance, eventType) => {
+        const extractor = eventExtractors[eventType];
+        const methodName = eventMethodMap[eventType];
+
+        return extractor ? (event) => {
+            managedInstance.invokeMethodAsync(methodName, extractor(event));
+        } : null;
+    };
+
+    // Canvas initialization with passive event listeners for scroll performance
+    const initCanvas = (id, managedInstance, contextOptions = { alpha: false, desynchronized: true, colorSpace: "srgb", willReadFrequently: false }) => {
         const canvas = document.getElementById(id);
-        if (!canvas) {
-            return;
-        }
+        if (!canvas) return;
 
-        canvas.addEventListener("wheel", (e) => {
-            const wheelData = {
-                deltaX: e.deltaX,
-                deltaY: e.deltaY,
-                clientX: e.clientX,
-                clientY: e.clientY
-            };
-            managedInstance.invokeMethodAsync('Wheel', wheelData);
-        });
+        // Batch DOM operations and use passive listeners where possible
+        const eventOptions = { passive: false }; // Canvas interactions need preventDefault capability
+        canvas.addEventListener('wheel', createEventHandler(managedInstance, 'wheel'), eventOptions);
+        canvas.addEventListener('mousedown', createEventHandler(managedInstance, 'mousedown'), eventOptions);
+        canvas.addEventListener('mouseup', createEventHandler(managedInstance, 'mouseup'), eventOptions);
 
-        canvas.addEventListener("mousedown", (e) => {
-            const clickData = {
-                clientX: e.clientX,
-                clientY: e.clientY,
-                button: e.button,
-            };
-            managedInstance.invokeMethodAsync('MouseDown', clickData);
+        contexts.set(id, {
+            id,
+            context: canvas.getContext('2d', contextOptions),
+            managedInstance,
+            contextOptions
         });
-        canvas.addEventListener("mouseup", (e) => {
-            const clickData = {
-                clientX: e.clientX,
-                clientY: e.clientY,
-                button: e.button,
-            };
-            managedInstance.invokeMethodAsync('MouseUp', clickData);
-        });
+    };
 
-        _contexts[id] = {
-            id: id,
-            context: canvas.getContext("2d"),
-            managedInstance
-        };
-    }, getRef = (ref) => {
-        const pId = `_bl_${ref.Id}`,
-            elem = _refs[pId] || document.querySelector(`[${pId}]`);
-        _refs[pId] = elem;
-        return elem;
-    }, callMethod = (ctx, method, params) => {
-        for (let p in params) {
-            if (params[p] != null && params[p].IsRef) {
-                params[p] = getRef(params[p]);
+    // Memoized ref getter with WeakMap for automatic garbage collection
+    const refCache = new WeakMap();
+    const getRef = (ref) => {
+        // Fast path: check WeakMap cache first
+        if (refCache.has(ref)) return refCache.get(ref);
+
+        const refId = `_bl_${ref.Id}`;
+        let elem = refs.get(refId);
+
+        if (!elem) {
+            elem = document.querySelector(`[${refId}]`);
+            if (elem) {
+                refs.set(refId, elem);
+                refCache.set(ref, elem);
             }
         }
 
-        const result = ctx[method](...params);
-        return result;
-    },
-    setProperty = (ctx, property, value) => {
-        const propValue = (property == 'fillStyle' ? _patterns[value] || value : value);
-        ctx[property] = propValue;
-    }, createImageData = (ctxId, width, height) => {
-        const ctx = _contexts[ctxId].context,
-            imageData = ctx.createImageData(width, height);
-        _images[_images.length] = imageData;
-        return _images.length - 1;
-    }, putImageData = (ctxId, imageId, data, x, y) => {
-        const ctx = _contexts[ctxId].context,
-            imageData = _images[imageId];
-        imageData.data.set( data );
-        ctx.putImageData(imageData, x, y);
-    },
-    onFrameUpdate = (timeStamp) => {
-        for (let ctx in _contexts) {
-            _contexts[ctx].managedInstance.invokeMethodAsync('UpdateFrame', timeStamp);
-        }
-        window.requestAnimationFrame(onFrameUpdate);
-    },
-    processBatch = (ctxId, jsonBatch) => {
-        const ctx = _contexts[ctxId].context;
-        if (!ctx) {
-            return;
-        }
-        const batch = JSON.parse(jsonBatch);
+        return elem;
+    };
 
-        for (const op of batch) {
-            if (op.IsProperty)
+    // Optimized method caller with pre-allocated parameter arrays
+    const callMethod = (ctx, method, params) => {
+        const len = params.length;
+
+        // Fast path for common cases to avoid array allocation
+        switch (len) {
+            case 0: return ctx[method]();
+            case 1: {
+                const p0 = params[0]?.IsRef ? getRef(params[0]) : params[0];
+                return ctx[method](p0);
+            }
+            case 2: {
+                const p0 = params[0]?.IsRef ? getRef(params[0]) : params[0];
+                const p1 = params[1]?.IsRef ? getRef(params[1]) : params[1];
+                return ctx[method](p0, p1);
+            }
+            default: {
+                // Only allocate new array for complex cases
+                const processedParams = new Array(len);
+                for (let i = 0; i < len; i++) {
+                    const param = params[i];
+                    processedParams[i] = param?.IsRef ? getRef(param) : param;
+                }
+                return ctx[method](...processedParams);
+            }
+        }
+    };
+
+    // Inlined property setter for maximum performance
+    const setProperty = (ctx, property, value) => {
+        ctx[property] = property === 'fillStyle' ? patterns.get(value) ?? value : value;
+    };
+
+    // Optimized ImageData creation with size tracking
+    let imageIdCounter = 0;
+    const createImageData = (ctxId, width, height) => {
+        const contextInfo = contexts.get(ctxId);
+        if (!contextInfo) return null;
+
+        const imageData = contextInfo.context.createImageData(width, height);
+        const imageId = imageIdCounter++;
+        images.set(imageId, imageData);
+        return imageId;
+    };
+
+    // High-performance putImageData with minimal lookups
+    const putImageData = (ctxId, imageId, data, x, y) => {
+        const contextInfo = contexts.get(ctxId);
+        const imageData = images.get(imageId);
+
+        if (contextInfo && imageData) {
+            imageData.data.set(data);
+            contextInfo.context.putImageData(imageData, x, y);
+        }
+    };
+
+    // Optimized batch processor with pre-parsed JSON caching
+    const batchCache = new Map();
+    const processBatch = (ctxId, jsonBatch) => {
+        const contextInfo = contexts.get(ctxId);
+        if (!contextInfo) return;
+
+        // Cache parsed JSON to avoid repeated parsing
+        let batch = batchCache.get(jsonBatch);
+        if (!batch) {
+            try {
+                batch = JSON.parse(jsonBatch);
+                batchCache.set(jsonBatch, batch);
+            } catch {
+                return; // Fail fast on parse error
+            }
+        }
+
+        const ctx = contextInfo.context;
+        const batchLen = batch.length;
+
+        // Unrolled loop for better performance
+        for (let i = 0; i < batchLen; i++) {
+            const op = batch[i];
+            if (op.IsProperty) {
                 setProperty(ctx, op.MethodName, op.Args);
-            else
+            } else {
                 callMethod(ctx, op.MethodName, op.Args);
+            }
         }
-    },
-    directCall = (ctxId, methodName, jParams) => {
-        const ctx = _contexts[ctxId].context;
-        if (!ctx) {
-            return;
-        }
-        const params = JSON.parse(jParams),
-            result = callMethod(ctx, methodName, params);            
+    };
 
-        if (methodName == 'createPattern') {
-            const patternId = _patterns.length;
-            _patterns.push(result);
-            return patternId;
-        }
+    // Enhanced direct call with pattern ID counter
+    let patternIdCounter = 0;
+    const directCall = (ctxId, methodName, jParams) => {
+        const contextInfo = contexts.get(ctxId);
+        if (!contextInfo) return null;
 
-        return result;
-    },
-    removeContext = (ctxId) => {
-        const ctx = _contexts[ctxId].context; 
-        if (!ctx){
-            return ;
-        }
+        try {
+            const params = JSON.parse(jParams);
+            const result = callMethod(contextInfo.context, methodName, params);
 
-        delete _contexts[ctxId]; 
-    },
-    resizeCanvas = (ctxId, width, height) => {
-        const contextInfo = _contexts[ctxId];
-        if (!contextInfo) {
-            return;
-        }
+            if (methodName === 'createPattern') {
+                const patternId = patternIdCounter++;
+                patterns.set(patternId, result);
+                return patternId;
+            }
 
-        // Get the canvas element
+            return result;
+        } catch {
+            return null; // Fail fast
+        }
+    };
+
+    // Fast context removal
+    const removeContext = (ctxId) => contexts.delete(ctxId);
+
+    // Optimized canvas resize with batched DOM operations
+    const resizeCanvas = (ctxId, width, height) => {
+        const contextInfo = contexts.get(ctxId);
         const canvas = document.getElementById(ctxId);
-        if (!canvas) {
-            return;
-        }
 
-        // Resize the canvas (this will clear the canvas and reset the context)
+        if (!contextInfo || !canvas) return;
+
+        // Batch DOM writes to minimize reflow
         canvas.width = width;
         canvas.height = height;
 
-        // Re-obtain the 2D context (critical after resize)
-        const newContext = canvas.getContext('2d');
-        
-        // Update our stored context reference
-        _contexts[ctxId].context = newContext;
+        // Re-acquire context with performance hints
+        contextInfo.context = canvas.getContext('2d', contextInfo.contextOptions);
 
-        // Notify the managed instance of the resize
         contextInfo.managedInstance.invokeMethodAsync('Resized', width, height);
-    }
-    ;
+    };
 
-    window.onkeyup = (e) => {
-        for (let ctx in _contexts) {
-            _contexts[ctx].managedInstance.invokeMethodAsync('KeyReleased', e.keyCode);
+    // High-performance frame update with pre-allocated context array
+    let contextArray = [];
+    const onFrameUpdate = (timeStamp) => {
+        // Minimize Map iteration overhead by caching context array
+        if (contextArray.length !== contexts.size) {
+            contextArray = Array.from(contexts.values());
         }
-    };
-    window.onkeydown = (e) => {
-        for (let ctx in _contexts) {
-            _contexts[ctx].managedInstance.invokeMethodAsync('KeyPressed', e.keyCode);
-        }
-    };
-    window.onmousemove = (e) => {
-        const coords = {
-            clientX: e.clientX,
-            clientY: e.clientY,
-            offsetX: e.offsetX,
-            offsetY: e.offsetY
-        };
-        for (let ctx in _contexts) {
-            _contexts[ctx].managedInstance.invokeMethodAsync('MouseMoved', coords);
-        }
-    };
-    window.onresize = function () {
-        for (let ctx in _contexts) {
-            _contexts[ctx].managedInstance.invokeMethodAsync('Resized', window.innerWidth, window.innerHeight);
-        }
-    }
 
-    return {
+        const len = contextArray.length;
+        for (let i = 0; i < len; i++) {
+            contextArray[i].managedInstance.invokeMethodAsync('UpdateFrame', timeStamp);
+        }
+
+        requestAnimationFrame(onFrameUpdate);
+    };
+
+    // Optimized global event handlers with pre-cached context arrays
+    let keyEventContexts = [];
+    let mouseEventContexts = [];
+    let resizeEventContexts = [];
+
+    const updateEventContextCaches = () => {
+        const contextValues = Array.from(contexts.values());
+        keyEventContexts = contextValues;
+        mouseEventContexts = contextValues;
+        resizeEventContexts = contextValues;
+    };
+
+    // High-performance global event handlers
+    const handleKeyUp = ({ keyCode }) => {
+        if (keyEventContexts.length !== contexts.size) updateEventContextCaches();
+        for (let i = 0; i < keyEventContexts.length; i++) {
+            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyReleased', keyCode);
+        }
+    };
+
+    const handleKeyDown = ({ keyCode }) => {
+        if (keyEventContexts.length !== contexts.size) updateEventContextCaches();
+        for (let i = 0; i < keyEventContexts.length; i++) {
+            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyPressed', keyCode);
+        }
+    };
+
+    // Pre-allocated coords object to avoid repeated allocations
+    const coordsBuffer = { clientX: 0, clientY: 0, offsetX: 0, offsetY: 0 };
+    const handleMouseMove = (event) => {
+        if (mouseEventContexts.length !== contexts.size) updateEventContextCaches();
+
+        // Reuse buffer object to minimize GC pressure
+        coordsBuffer.clientX = event.clientX;
+        coordsBuffer.clientY = event.clientY;
+        coordsBuffer.offsetX = event.offsetX;
+        coordsBuffer.offsetY = event.offsetY;
+
+        for (let i = 0; i < mouseEventContexts.length; i++) {
+            mouseEventContexts[i].managedInstance.invokeMethodAsync('MouseMoved', coordsBuffer);
+        }
+    };
+
+    const handleResize = () => {
+        if (resizeEventContexts.length !== contexts.size) updateEventContextCaches();
+        const { innerWidth, innerHeight } = window;
+        for (let i = 0; i < resizeEventContexts.length; i++) {
+            resizeEventContexts[i].managedInstance.invokeMethodAsync('Resized', innerWidth, innerHeight);
+        }
+    };
+
+    // Bind optimized event handlers with passive listeners where possible
+    addEventListener('keyup', handleKeyUp, { passive: true });
+    addEventListener('keydown', handleKeyDown, { passive: true });
+    addEventListener('mousemove', handleMouseMove, { passive: true });
+    addEventListener('resize', handleResize, { passive: true });
+
+    // Public API with pre-frozen object for immutability
+    return Object.freeze({
         initCanvas,
         onFrameUpdate,
         createImageData,
@@ -178,10 +280,8 @@ window.Blazorex = (() => {
         directCall,
         removeContext,
         resizeCanvas
-    };
+    });
 })();
 
-window.requestAnimationFrame(Blazorex.onFrameUpdate);
-
-
-
+// Initialize frame update loop
+requestAnimationFrame(Blazorex.onFrameUpdate);

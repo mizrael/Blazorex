@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Blazorex;
 
@@ -13,6 +13,7 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     {
         if (this.CanvasManager is null)
             return;
+
         await this.CanvasManager.OnChildCanvasAddedAsync(this);
     }
 
@@ -27,7 +28,7 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
         await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", Id, managedInstance);
 
         this.RenderContext = new RenderContext2D(Id, this.JSRuntime);
-                    
+
         await this.OnCanvasReady.InvokeAsync(this);
     }
 
@@ -108,7 +109,7 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     public EventCallback<Size> OnResize { get; set; }
 
     [Parameter]
-    public EventCallback<float> OnFrameReady { get; set; }    
+    public EventCallback<float> OnFrameReady { get; set; }
 
     [Parameter]
     public EventCallback<CanvasBase> OnCanvasReady { get; set; }
@@ -131,6 +132,32 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     [Parameter]
     public string Name { get; set; }
 
+    /// <summary>
+    /// A boolean value that indicates if the canvas contains an alpha channel.If set to false, the browser now knows that the backdrop is always opaque, which can speed up drawing of transparent content and images.
+    /// </summary>
+    [Parameter]
+    public bool Alpha { get; set; }
+
+    /// <summary>
+    /// Specifies the color space of the rendering context. Possible values are:
+    ///     "srgb" selects the sRGB color space.This is the default value.
+    ///     "display-p3" selects the display-p3 color space.
+    /// </summary>
+    [Parameter]
+    public ColorSpace ColorSpace { get; set; } = ColorSpace.Srgb;
+
+    /// <summary>
+    /// A boolean value that hints the user agent to reduce the latency by desynchronizing the canvas paint cycle from the event loop.
+    /// </summary>
+    [Parameter]
+    public bool Desynchronized { get; set; } = true;
+
+    /// <summary>
+    /// A boolean value that indicates whether or not a lot of read-back operations are planned. This will force the use of a software (instead of hardware accelerated) 2D canvas and can save memory when calling GetImageData() frequently.
+    /// </summary>
+    [Parameter]
+    public bool WillReadFrequently { get; set; }
+
     public ElementReference ElementReference { get; internal set; }
 
     [CascadingParameter]
@@ -141,7 +168,7 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     #endregion Properties
 
     #region Public Methods
-    
+
     /// <summary>
     /// Resizes the canvas to the specified dimensions.
     /// Note: This will clear the canvas and reset the drawing context.
@@ -151,16 +178,18 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     public void Resize(int width, int height)
     {
         if (RenderContext == null)
-            throw new InvalidOperationException("Canvas not ready. Ensure OnCanvasReady has been called.");
-            
+            throw new InvalidOperationException(
+                "Canvas not ready. Ensure OnCanvasReady has been called."
+            );
+
         // Update the component properties
         Width = width;
         Height = height;
-        
+
         // Trigger the resize operation
         RenderContext.Resize(width, height);
     }
-    
+
     #endregion Public Methods
 
     #region Disposing
@@ -170,7 +199,7 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
         {
             // Call javascript to delete this canvas Id from the _contexts array
             await JSRuntime.InvokeVoidAsync("Blazorex.removeContext", Id);
-            
+
             _disposed = true;
         }
     }
