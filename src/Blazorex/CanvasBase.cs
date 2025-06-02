@@ -25,9 +25,21 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
         await JSRuntime.InvokeVoidAsync("import", "./_content/Blazorex/blazorex.js");
 
         var managedInstance = DotNetObjectReference.Create(this);
-        await JSRuntime.InvokeVoidAsync("Blazorex.initCanvas", Id, managedInstance);
 
-        this.RenderContext = new RenderContext2D(Id, this.JSRuntime);
+        await JSRuntime.InvokeVoidAsync(
+            "Blazorex.initCanvas",
+            this.Id,
+            managedInstance,
+            new
+            {
+                alpha = this.Alpha,
+                desynchronized = this.Desynchronized,
+                colorSpace = ColorSpace != null ? ColorSpace.Value : ColorSpace.Srgb.Value,
+                willReadFrequently = this.WillReadFrequently
+            }
+        );
+
+        this.RenderContext = new RenderContext2D(this.Id, this.JSRuntime);
 
         await this.OnCanvasReady.InvokeAsync(this);
     }
@@ -144,7 +156,7 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     ///     "display-p3" selects the display-p3 color space.
     /// </summary>
     [Parameter]
-    public ColorSpace ColorSpace { get; set; } = ColorSpace.Srgb;
+    public ColorSpace ColorSpace { get; set; }
 
     /// <summary>
     /// A boolean value that hints the user agent to reduce the latency by desynchronizing the canvas paint cycle from the event loop.
