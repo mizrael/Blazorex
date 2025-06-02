@@ -114,6 +114,31 @@ window.Blazorex = (() => {
         }
 
         delete _contexts[ctxId]; 
+    },
+    resizeCanvas = (ctxId, width, height) => {
+        const contextInfo = _contexts[ctxId];
+        if (!contextInfo) {
+            return;
+        }
+
+        // Get the canvas element
+        const canvas = document.getElementById(ctxId);
+        if (!canvas) {
+            return;
+        }
+
+        // Resize the canvas (this will clear the canvas and reset the context)
+        canvas.width = width;
+        canvas.height = height;
+
+        // Re-obtain the 2D context (critical after resize)
+        const newContext = canvas.getContext('2d');
+        
+        // Update our stored context reference
+        _contexts[ctxId].context = newContext;
+
+        // Notify the managed instance of the resize
+        contextInfo.managedInstance.invokeMethodAsync('Resized', width, height);
     }
     ;
 
@@ -151,7 +176,8 @@ window.Blazorex = (() => {
         putImageData,
         processBatch,
         directCall,
-        removeContext
+        removeContext,
+        resizeCanvas
     };
 })();
 

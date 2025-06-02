@@ -54,4 +54,5 @@ public interface IRenderContext
     TextBaseline TextBaseline { get; set; }
     
     void SetLineDash(float[] segments);
+    void Resize(int width, int height);
 }

@@ -140,6 +140,29 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
 
     #endregion Properties
 
+    #region Public Methods
+    
+    /// <summary>
+    /// Resizes the canvas to the specified dimensions.
+    /// Note: This will clear the canvas and reset the drawing context.
+    /// </summary>
+    /// <param name="width">New canvas width</param>
+    /// <param name="height">New canvas height</param>
+    public void Resize(int width, int height)
+    {
+        if (RenderContext == null)
+            throw new InvalidOperationException("Canvas not ready. Ensure OnCanvasReady has been called.");
+            
+        // Update the component properties
+        Width = width;
+        Height = height;
+        
+        // Trigger the resize operation
+        RenderContext.Resize(width, height);
+    }
+    
+    #endregion Public Methods
+
     #region Disposing
     public async ValueTask DisposeAsync()
     {
