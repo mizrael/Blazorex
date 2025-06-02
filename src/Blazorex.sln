@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazorex.Samples.MouseCoord
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazorex.Samples.PanAndZoom", "..\samples\Blazorex.Samples.PanAndZoom\Blazorex.Samples.PanAndZoom.csproj", "{A3C12542-ACDA-4FEE-A254-60B6749BFC91}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazorex.Samples.ResizeCanvas", "..\samples\Blazorex.Samples.ResizeCanvas\Blazorex.Samples.ResizeCanvas.csproj", "{AA607514-BFF9-486B-4FF6-BAC7A416FB89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{A3C12542-ACDA-4FEE-A254-60B6749BFC91}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A3C12542-ACDA-4FEE-A254-60B6749BFC91}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A3C12542-ACDA-4FEE-A254-60B6749BFC91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA607514-BFF9-486B-4FF6-BAC7A416FB89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA607514-BFF9-486B-4FF6-BAC7A416FB89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA607514-BFF9-486B-4FF6-BAC7A416FB89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA607514-BFF9-486B-4FF6-BAC7A416FB89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +56,7 @@ Global
 		{373C72A6-BF2D-432F-A0AD-74854E275BC3} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 		{562CE073-1AF6-4E33-B84D-2C078E0F05EC} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 		{A3C12542-ACDA-4FEE-A254-60B6749BFC91} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
+		{AA607514-BFF9-486B-4FF6-BAC7A416FB89} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4E38A4B6-BFE1-4015-B014-748F68320AC4}
