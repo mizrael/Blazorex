@@ -1,5 +1,6 @@
 # Blazorex
 [![Nuget](https://img.shields.io/nuget/v/Blazorex?style=plastic)](https://www.nuget.org/packages/Blazorex/)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/mizrael/Blazorex)
 
 ![Blazorex](https://raw.githubusercontent.com/mizrael/Blazorex/refs/heads/master/blazorex-logo.png)
 
