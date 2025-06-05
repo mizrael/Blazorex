@@ -48,7 +48,6 @@ window.Blazorex = (() => {
         canvas.addEventListener('touchstart', createEventHandler(managedInstance, 'touchstart'), eventOptions);
         canvas.addEventListener('touchend', createEventHandler(managedInstance, 'touchend'), eventOptions);
 
-
         contexts.set(id, {
             id,
             context: canvas.getContext('2d', contextOptions),
@@ -80,7 +79,6 @@ window.Blazorex = (() => {
     };
 
     const callMethod = (ctx, method, params) => {
-
         const safeParams = params ? [...params] : []; // Ensure we have a copy to avoid mutation
 
         if (safeParams.length === 0) {
@@ -90,13 +88,11 @@ window.Blazorex = (() => {
         let marshalRefId;
 
         if (typeof (safeParams[0]?.IsElementRef) !== "undefined") {
-
             const marshalRef = safeParams[0];
 
             marshalRefId = marshalRef.Id;
 
             if (!marshalRef.IsElementRef) {
-
                 safeParams.splice(0, 1);
 
                 // if we have an existing marshal reference then we'll want to call
@@ -120,7 +116,6 @@ window.Blazorex = (() => {
 
             safeParams[0] = getElementByRef(marshalRef);
         }
-
 
         const result = ctx[method](...safeParams);
 
