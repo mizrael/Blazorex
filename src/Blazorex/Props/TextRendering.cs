@@ -1,6 +1,6 @@
 ﻿namespace Blazorex;
 
-public record TextRendering : CanvasProperty<string>
+public sealed record TextRendering : CanvasProperty<string>
 {
     private TextRendering(string value)
         : base(value) { }

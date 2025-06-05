@@ -6,6 +6,9 @@ namespace Blazorex;
 
 public readonly struct CanvasCreationOptions
 {
+    /// <summary>
+    /// The underlying DOM element reference for the canvas.
+    /// </summary>
     public ElementReference ElementReference { get; init; }
 
     /// <summary>
@@ -62,11 +65,39 @@ public readonly struct CanvasCreationOptions
     /// fired at every frame refresh
     /// </summary>
     public Action<float> OnFrameReady { get; init; }
+
+    /// <summary>
+    /// Fired when a key is released while the canvas has focus.
+    /// </summary>
     public Action<int> OnKeyUp { get; init; }
+
+    /// <summary>
+    /// Fired when a key is pressed while the canvas has focus.
+    /// </summary>
     public Action<int> OnKeyDown { get; init; }
-    public Action<MouseCoords> OnMouseMove { get; init; }
-    public Action<WheelDelta> OnMouseWheel { get; init; }
-    public Action<MouseButtonData> OnMouseDown { get; init; }
-    public Action<MouseButtonData> OnMouseUp { get; init; }
+
+    /// <summary>
+    /// Fired when the mouse moves over the canvas.
+    /// </summary>
+    public Action<MouseMoveEvent> OnMouseMove { get; init; }
+
+    /// <summary>
+    /// Fired when the mouse wheel is scrolled over the canvas.
+    /// </summary>
+    public Action<MouseScrollEvent> OnMouseWheel { get; init; }
+
+    /// <summary>
+    /// Fired when a mouse button is pressed down over the canvas.
+    /// </summary>
+    public Action<MouseClickEvent> OnMouseDown { get; init; }
+
+    /// <summary>
+    /// Fired when a mouse button is released over the canvas.
+    /// </summary>
+    public Action<MouseClickEvent> OnMouseUp { get; init; }
+
+    /// <summary>
+    /// Fired when the canvas is resized.
+    /// </summary>
     public Action<Size> OnResize { get; init; }
 }

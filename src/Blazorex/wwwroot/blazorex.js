@@ -1,9 +1,8 @@
 window.Blazorex = (() => {
-    // Pre-allocated typed arrays for better memory performance
     const contexts = new Map();
-    const refs = new Map();
+    const elementRefs = new Map();
+    const marshalRefs = new Map();
     const images = new Map();
-    const patterns = new Map();
 
     // Pre-compiled event data extractors for zero-overhead event handling
     const eventExtractors = Object.freeze({
@@ -48,57 +47,87 @@ window.Blazorex = (() => {
         });
     };
 
-    // Memoized ref getter with WeakMap for automatic garbage collection
-    const refCache = new WeakMap();
-    const getRef = (ref) => {
-        // Fast path: check WeakMap cache first
-        if (refCache.has(ref)) return refCache.get(ref);
-
+    // This function retrieves the DOM element associated with a given ElementRef.
+    const getElementByRef = (ref) => {
         const refId = `_bl_${ref.Id}`;
-        let elem = refs.get(refId);
+        let elem = elementRefs.get(refId);
 
         if (!elem) {
             elem = document.querySelector(`[${refId}]`);
             if (elem) {
-                refs.set(refId, elem);
-                refCache.set(ref, elem);
+                elementRefs.set(refId, elem);
             }
         }
-
         return elem;
     };
 
-    // Optimized method caller with pre-allocated parameter arrays
     const callMethod = (ctx, method, params) => {
-        const len = params.length;
 
-        // Fast path for common cases to avoid array allocation
-        switch (len) {
-            case 0: return ctx[method]();
-            case 1: {
-                const p0 = params[0]?.IsRef ? getRef(params[0]) : params[0];
-                return ctx[method](p0);
-            }
-            case 2: {
-                const p0 = params[0]?.IsRef ? getRef(params[0]) : params[0];
-                const p1 = params[1]?.IsRef ? getRef(params[1]) : params[1];
-                return ctx[method](p0, p1);
-            }
-            default: {
-                // Only allocate new array for complex cases
-                const processedParams = new Array(len);
-                for (let i = 0; i < len; i++) {
-                    const param = params[i];
-                    processedParams[i] = param?.IsRef ? getRef(param) : param;
-                }
-                return ctx[method](...processedParams);
-            }
+        const safeParams = params ? [...params] : []; // Ensure we have a copy to avoid mutation
+
+        if (safeParams.length === 0) {
+            return ctx[method]();
         }
+
+        let marshalRefId;
+
+        if (typeof (safeParams[0]?.IsElementRef) !== "undefined") {
+
+            const marshalRef = safeParams[0];
+
+            marshalRefId = marshalRef.Id;
+
+            if (!marshalRef.IsElementRef) {
+
+                safeParams.splice(0, 1);
+
+                // if we have an existing marshal reference then we'll want to call
+                const existingRef = marshalRefs.get(marshalRefId);
+
+                if (existingRef && existingRef[method]) {
+                    if (marshalRef.ClassInitializer) {
+                        existingRef[method](new globalThis[marshalRef.ClassInitializer](...safeParams));
+                    } else {
+                        existingRef[method](...safeParams);
+                    }
+                    return;
+                }
+
+                const marshalRefResult = ctx[method](...safeParams);
+
+                marshalRefs.set(marshalRef.Id, marshalRefResult);
+
+                return marshalRef.Id;
+            }
+
+            safeParams[0] = getElementByRef(marshalRef);
+        }
+
+
+        const result = ctx[method](...safeParams);
+
+        if (marshalRefId) {
+            marshalRefs.set(marshalRefId, result);
+        }
+
+        return result;
     };
 
-    // Inlined property setter for maximum performance
     const setProperty = (ctx, property, value) => {
-        ctx[property] = property === 'fillStyle' ? patterns.get(value) ?? value : value;
+        // Unwrap .Value or .Result if present
+        let val = value?.Value ?? value;
+
+        // If the unwrapped value has an Id property (string), use that
+        if (val && typeof val === "object" && "Id" in val) {
+            val = val.Id;
+        }
+
+        // For fillStyle and strokeStyle, resolve to pattern or gradient if available
+        if (property === 'fillStyle' || property === 'strokeStyle') {
+            ctx[property] = marshalRefs.get(val) ?? val;
+        } else {
+            ctx[property] = val;
+        }
     };
 
     // Optimized ImageData creation with size tracking
@@ -155,8 +184,6 @@ window.Blazorex = (() => {
         }
     };
 
-    // Enhanced direct call with pattern ID counter
-    let patternIdCounter = 0;
     const directCall = (ctxId, methodName, jParams) => {
         const contextInfo = contexts.get(ctxId);
         if (!contextInfo) return null;
@@ -164,13 +191,6 @@ window.Blazorex = (() => {
         try {
             const params = JSON.parse(jParams);
             const result = callMethod(contextInfo.context, methodName, params);
-
-            if (methodName === 'createPattern') {
-                const patternId = patternIdCounter++;
-                patterns.set(patternId, result);
-                return patternId;
-            }
-
             return result;
         } catch {
             return null; // Fail fast

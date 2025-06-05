@@ -1,6 +1,6 @@
 ﻿namespace Blazorex;
 
-public record TextMetrics
+public sealed record TextMetrics
 {
     public float Width { get; init; }
     public float ActualBoundingBoxLeft { get; init; }

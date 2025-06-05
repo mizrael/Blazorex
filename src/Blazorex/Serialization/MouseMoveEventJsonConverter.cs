@@ -1,14 +1,21 @@
-﻿using System.Text.Json;
-using System;
+﻿using System;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Blazorex.Serialization;
 
-public class MouseCoordsConverter : JsonConverter<MouseCoords>
+internal sealed class MouseMoveEventJsonConverter : JsonConverter<MouseMoveEvent>
 {
-    public override MouseCoords Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override MouseMoveEvent Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options
+    )
     {
-        double clientX = 0, clientY = 0, offsetX = 0, offsetY = 0;
+        double clientX = 0,
+            clientY = 0,
+            offsetX = 0,
+            offsetY = 0;
 
         if (reader.TokenType != JsonTokenType.StartObject)
             throw new JsonException();
@@ -26,22 +33,29 @@ public class MouseCoordsConverter : JsonConverter<MouseCoords>
                     case "clientx":
                         clientX = reader.GetDouble();
                         break;
+
                     case "clienty":
                         clientY = reader.GetDouble();
                         break;
+
                     case "offsetx":
                         offsetX = reader.GetDouble();
                         break;
+
                     case "offsety":
                         offsetY = reader.GetDouble();
                         break;
                 }
             }
         }
-        return new MouseCoords(clientX, clientY, offsetX, offsetY);
+        return new MouseMoveEvent(clientX, clientY, offsetX, offsetY);
     }
 
-    public override void Write(Utf8JsonWriter writer, MouseCoords value, JsonSerializerOptions options)
+    public override void Write(
+        Utf8JsonWriter writer,
+        MouseMoveEvent value,
+        JsonSerializerOptions options
+    )
     {
         writer.WriteStartObject();
         writer.WriteNumber("clientX", value.ClientX);

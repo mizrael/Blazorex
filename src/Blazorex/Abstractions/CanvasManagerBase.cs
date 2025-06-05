@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 
-namespace Blazorex;
+namespace Blazorex.Abstractions;
 
 public abstract class CanvasManagerBase : ComponentBase
 {
@@ -13,12 +13,12 @@ public abstract class CanvasManagerBase : ComponentBase
     {
         _names.Add(name, options);
 
-        this.StateHasChanged();
+        StateHasChanged();
     }
 
     internal async ValueTask OnChildCanvasAddedAsync(CanvasBase canvas)
     {
-        await this.OnCanvasAdded.InvokeAsync(canvas);
+        await OnCanvasAdded.InvokeAsync(canvas);
     }
 
     [Parameter]

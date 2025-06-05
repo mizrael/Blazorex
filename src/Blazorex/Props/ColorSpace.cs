@@ -1,6 +1,6 @@
 ﻿namespace Blazorex;
 
-public record ColorSpace : CanvasProperty<string>
+public sealed record ColorSpace : CanvasProperty<string>
 {
     private ColorSpace(string value)
         : base(value) { }

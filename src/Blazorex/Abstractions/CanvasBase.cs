@@ -1,20 +1,21 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Blazorex.Renderer;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 namespace Blazorex;
 
-public class CanvasBase : ComponentBase, IAsyncDisposable
+public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 {
     private bool _disposed = false;
 
     protected override async Task OnInitializedAsync()
     {
-        if (this.CanvasManager is null)
+        if (CanvasManager is null)
             return;
 
-        await this.CanvasManager.OnChildCanvasAddedAsync(this);
+        await CanvasManager.OnChildCanvasAddedAsync(this);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -28,20 +29,20 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
 
         await JSRuntime.InvokeVoidAsync(
             "Blazorex.initCanvas",
-            this.Id,
+            Id,
             managedInstance,
             new
             {
-                alpha = this.Alpha,
-                desynchronized = this.Desynchronized,
+                alpha = Alpha,
+                desynchronized = Desynchronized,
                 colorSpace = ColorSpace != null ? ColorSpace.Value : ColorSpace.Srgb.Value,
-                willReadFrequently = this.WillReadFrequently
+                willReadFrequently = WillReadFrequently
             }
         );
 
-        this.RenderContext = new RenderContext2D(this.Id, this.JSRuntime);
+        RenderContext = new RenderContext2D(Id, JSRuntime);
 
-        await this.OnCanvasReady.InvokeAsync(this);
+        await OnCanvasReady.InvokeAsync(this);
     }
 
     #region JS interop
@@ -49,50 +50,50 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async ValueTask UpdateFrame(float timeStamp)
     {
-        await this.OnFrameReady.InvokeAsync(timeStamp);
-        await this.RenderContext.ProcessBatchAsync();
+        await OnFrameReady.InvokeAsync(timeStamp);
+        await RenderContext.ProcessBatchAsync();
     }
 
     [JSInvokable]
     public async ValueTask Resized(int width, int height)
     {
-        await this.OnResize.InvokeAsync(new Size(width, height));
+        await OnResize.InvokeAsync(new Size(width, height));
     }
 
     [JSInvokable]
     public async ValueTask KeyPressed(int keyCode)
     {
-        await this.OnKeyDown.InvokeAsync(keyCode);
+        await OnKeyDown.InvokeAsync(keyCode);
     }
 
     [JSInvokable]
     public async ValueTask KeyReleased(int keyCode)
     {
-        await this.OnKeyUp.InvokeAsync(keyCode);
+        await OnKeyUp.InvokeAsync(keyCode);
     }
 
     [JSInvokable]
-    public async ValueTask MouseMoved(MouseCoords coords)
+    public async ValueTask MouseMoved(MouseMoveEvent coords)
     {
-        await this.OnMouseMove.InvokeAsync(coords);
+        await OnMouseMove.InvokeAsync(coords);
     }
 
     [JSInvokable]
-    public async ValueTask Wheel(WheelDelta evt)
+    public async ValueTask Wheel(MouseScrollEvent evt)
     {
-        await this.OnMouseWheel.InvokeAsync(evt);
+        await OnMouseWheel.InvokeAsync(evt);
     }
 
     [JSInvokable]
-    public async ValueTask MouseDown(MouseButtonData evt)
+    public async ValueTask MouseDown(MouseClickEvent evt)
     {
-        await this.OnMouseDown.InvokeAsync(evt);
+        await OnMouseDown.InvokeAsync(evt);
     }
 
     [JSInvokable]
-    public async ValueTask MouseUp(MouseButtonData evt)
+    public async ValueTask MouseUp(MouseClickEvent evt)
     {
-        await this.OnMouseUp.InvokeAsync(evt);
+        await OnMouseUp.InvokeAsync(evt);
     }
 
     #endregion JS interop
@@ -106,16 +107,16 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     public EventCallback<int> OnKeyDown { get; set; }
 
     [Parameter]
-    public EventCallback<MouseCoords> OnMouseMove { get; set; }
+    public EventCallback<MouseMoveEvent> OnMouseMove { get; set; }
 
     [Parameter]
-    public EventCallback<WheelDelta> OnMouseWheel { get; set; }
+    public EventCallback<MouseScrollEvent> OnMouseWheel { get; set; }
 
     [Parameter]
-    public EventCallback<MouseButtonData> OnMouseDown { get; set; }
+    public EventCallback<MouseClickEvent> OnMouseDown { get; set; }
 
     [Parameter]
-    public EventCallback<MouseButtonData> OnMouseUp { get; set; }
+    public EventCallback<MouseClickEvent> OnMouseUp { get; set; }
 
     [Parameter]
     public EventCallback<Size> OnResize { get; set; }
@@ -205,6 +206,7 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
     #endregion Public Methods
 
     #region Disposing
+
     public async ValueTask DisposeAsync()
     {
         if (!_disposed)
@@ -215,5 +217,6 @@ public class CanvasBase : ComponentBase, IAsyncDisposable
             _disposed = true;
         }
     }
+
     #endregion Disposing
 }

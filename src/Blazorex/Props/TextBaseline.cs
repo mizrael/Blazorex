@@ -1,8 +1,9 @@
 ﻿namespace Blazorex;
 
-public record TextBaseline : CanvasProperty<string>
+public sealed record TextBaseline : CanvasProperty<string>
 {
-    private TextBaseline(string value) : base(value) { }
+    private TextBaseline(string value)
+        : base(value) { }
 
     public static readonly TextBaseline Alphabetic = new("alphabetic");
     public static readonly TextBaseline Top = new("top");
