@@ -3,19 +3,25 @@ window.Blazorex = (() => {
     const elementRefs = new Map();
     const marshalRefs = new Map();
     const images = new Map();
+    const heldKeys = new Set();
+    const modifierState = { shift: false, ctrl: false, alt: false, meta: false };
 
     // Pre-compiled event data extractors for zero-overhead event handling
     const eventExtractors = Object.freeze({
         wheel: e => ({ deltaX: e.deltaX, deltaY: e.deltaY, clientX: e.clientX, clientY: e.clientY }),
         mousedown: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button }),
-        mouseup: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button })
+        mouseup: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button }),
+        touchstart: e => ({ clientX: e.touches[0]?.clientX || 0, clientY: e.touches[0]?.clientY || 0, button: 0 }),
+        touchend: e => ({ clientX: e.changedTouches[0]?.clientX || 0, clientY: e.changedTouches[0]?.clientY || 0, button: 0 })
     });
 
     // Optimized event method name mapping with pre-computed capitalization
     const eventMethodMap = Object.freeze({
         wheel: 'Wheel',
         mousedown: 'MouseDown',
-        mouseup: 'MouseUp'
+        mouseup: 'MouseUp',
+        touchstart: 'MouseDown', // Map touch to mouse events
+        touchend: 'MouseUp'
     });
 
     // High-performance event handler factory with pre-bound contexts
@@ -34,10 +40,14 @@ window.Blazorex = (() => {
         if (!canvas) return;
 
         // Batch DOM operations and use passive listeners where possible
-        const eventOptions = { passive: false }; // Canvas interactions need preventDefault capability
+        const eventOptions = { passive: false };
         canvas.addEventListener('wheel', createEventHandler(managedInstance, 'wheel'), eventOptions);
         canvas.addEventListener('mousedown', createEventHandler(managedInstance, 'mousedown'), eventOptions);
         canvas.addEventListener('mouseup', createEventHandler(managedInstance, 'mouseup'), eventOptions);
+        // Add touch support
+        canvas.addEventListener('touchstart', createEventHandler(managedInstance, 'touchstart'), eventOptions);
+        canvas.addEventListener('touchend', createEventHandler(managedInstance, 'touchend'), eventOptions);
+
 
         contexts.set(id, {
             id,
@@ -45,6 +55,14 @@ window.Blazorex = (() => {
             managedInstance,
             contextOptions
         });
+    };
+
+    // Update modifier state tracking
+    const updateModifierState = (event) => {
+        modifierState.shift = event.shiftKey;
+        modifierState.ctrl = event.ctrlKey;
+        modifierState.alt = event.altKey;
+        modifierState.meta = event.metaKey;
     };
 
     // This function retrieves the DOM element associated with a given ElementRef.
@@ -246,17 +264,57 @@ window.Blazorex = (() => {
     };
 
     // High-performance global event handlers
-    const handleKeyUp = ({ keyCode }) => {
+    const handleKeyUp = (event) => {
+        const { keyCode, key } = event;
+        updateModifierState(event);
+
         if (keyEventContexts.length !== contexts.size) updateEventContextCaches();
+
+        // Remove from held keys
+        heldKeys.delete(keyCode);
+
+        // Create augmented event data
+        const eventData = {
+            keyCode,
+            key,
+            isHeld: heldKeys.has(keyCode), // Will be false since we just deleted it
+            heldKeys: Array.from(heldKeys),
+            modifiers: { ...modifierState }
+        };
+
         for (let i = 0; i < keyEventContexts.length; i++) {
-            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyReleased', keyCode);
+            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyReleased', eventData);
         }
     };
 
-    const handleKeyDown = ({ keyCode }) => {
+    const handleKeyDown = (event) => {
+        const { keyCode, key } = event;
+        updateModifierState(event);
+
         if (keyEventContexts.length !== contexts.size) updateEventContextCaches();
+
+        // Track held keys
+        heldKeys.add(keyCode);
+
+        // Create augmented event data
+        const eventData = {
+            keyCode,
+            key,
+            isHeld: true, // Always true for keydown
+            heldKeys: Array.from(heldKeys),
+            modifiers: { ...modifierState }
+        };
+
+        // Send KeyPressed event with augmented data
         for (let i = 0; i < keyEventContexts.length; i++) {
-            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyPressed', keyCode);
+            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyPressed', eventData);
+        }
+
+        // Send KeyPress event for printable characters
+        if (key.length === 1 || ['Enter', 'Tab', 'Backspace', 'Delete'].includes(key)) {
+            for (let i = 0; i < keyEventContexts.length; i++) {
+                keyEventContexts[i].managedInstance.invokeMethodAsync('KeyPressed', eventData);
+            }
         }
     };
 

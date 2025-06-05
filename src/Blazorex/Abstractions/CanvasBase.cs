@@ -61,13 +61,13 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
     }
 
     [JSInvokable]
-    public async ValueTask KeyPressed(int keyCode)
+    public async ValueTask KeyPressed(KeyboardPressEvent keyCode)
     {
         await OnKeyDown.InvokeAsync(keyCode);
     }
 
     [JSInvokable]
-    public async ValueTask KeyReleased(int keyCode)
+    public async ValueTask KeyReleased(KeyboardPressEvent keyCode)
     {
         await OnKeyUp.InvokeAsync(keyCode);
     }
@@ -101,10 +101,10 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
     #region Event Callbacks
 
     [Parameter]
-    public EventCallback<int> OnKeyUp { get; set; }
+    public EventCallback<KeyboardPressEvent> OnKeyUp { get; set; }
 
     [Parameter]
-    public EventCallback<int> OnKeyDown { get; set; }
+    public EventCallback<KeyboardPressEvent> OnKeyDown { get; set; }
 
     [Parameter]
     public EventCallback<MouseMoveEvent> OnMouseMove { get; set; }

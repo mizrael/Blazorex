@@ -69,12 +69,12 @@ public readonly struct CanvasCreationOptions
     /// <summary>
     /// Fired when a key is released while the canvas has focus.
     /// </summary>
-    public Action<int> OnKeyUp { get; init; }
+    public Action<KeyboardPressEvent> OnKeyUp { get; init; }
 
     /// <summary>
     /// Fired when a key is pressed while the canvas has focus.
     /// </summary>
-    public Action<int> OnKeyDown { get; init; }
+    public Action<KeyboardPressEvent> OnKeyDown { get; init; }
 
     /// <summary>
     /// Fired when the mouse moves over the canvas.
