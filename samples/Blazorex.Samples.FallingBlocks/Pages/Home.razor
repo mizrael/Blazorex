@@ -1,0 +1,31 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+
+
+<div class="game @(!FallingBlocksGame.Lose ? "game-ready" : null)">
+    <h2>Falling Blocks</h2>
+    <div class="canvas">
+        <div class="actions">
+            <button @onclick=OnNewGame>Start Game</button>
+        </div>
+        <CanvasManager @ref="_canvasManager" />
+    </div>
+    <div class="status">
+        <span>Status: @(FallingBlocksGame.Lose ? "Lost!" : "Playing...")</span>
+        <span>@(!FallingBlocksGame.Frozen ? "🟢" : "🔴")</span>
+    </div>
+    <div class="keyboard">
+        <span>Controls:</span>
+        <ul>
+            <li><kbd>Left</kbd> - Move Left</li>
+            <li><kbd>Right</kbd> - Move Right</li>
+            <li><kbd>Up</kbd> - Rotate</li>
+            <li><kbd>Down</kbd> - Drop</li>
+            <li><kbd>Space</kbd> - Drop All-the-way</li>
+        </ul>
+    </div>
+
+</div>
+
+
