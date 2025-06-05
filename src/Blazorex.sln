@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazorex.Samples.ResizeCanv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazorex.Samples.FallingBlocks", "..\samples\Blazorex.Samples.FallingBlocks\Blazorex.Samples.FallingBlocks.csproj", "{91ECBD77-F241-D001-7251-361EBDFF7ECE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazorex.Samples.KeyAndMouse", "..\samples\Blazorex.Samples.KeyAndMouse\Blazorex.Samples.KeyAndMouse.csproj", "{E28166E2-EE6A-6751-9EAE-3681CB84BBAA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{91ECBD77-F241-D001-7251-361EBDFF7ECE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{91ECBD77-F241-D001-7251-361EBDFF7ECE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{91ECBD77-F241-D001-7251-361EBDFF7ECE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E28166E2-EE6A-6751-9EAE-3681CB84BBAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E28166E2-EE6A-6751-9EAE-3681CB84BBAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E28166E2-EE6A-6751-9EAE-3681CB84BBAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E28166E2-EE6A-6751-9EAE-3681CB84BBAA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{A3C12542-ACDA-4FEE-A254-60B6749BFC91} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 		{AA607514-BFF9-486B-4FF6-BAC7A416FB89} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 		{91ECBD77-F241-D001-7251-361EBDFF7ECE} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
+		{E28166E2-EE6A-6751-9EAE-3681CB84BBAA} = {3408A794-4D16-405A-9F9E-1C2CE4BD8BEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4E38A4B6-BFE1-4015-B014-748F68320AC4}

@@ -66,7 +66,7 @@ window.Blazorex = (() => {
 
     // This function retrieves the DOM element associated with a given ElementRef.
     const getElementByRef = (ref) => {
-        const refId = `_bl_${ref.Id}`;
+        const refId = `_bl_${ref.id}`;
         let elem = elementRefs.get(refId);
 
         if (!elem) {
@@ -79,6 +79,7 @@ window.Blazorex = (() => {
     };
 
     const callMethod = (ctx, method, params) => {
+
         const safeParams = params ? [...params] : []; // Ensure we have a copy to avoid mutation
 
         if (safeParams.length === 0) {
@@ -87,20 +88,22 @@ window.Blazorex = (() => {
 
         let marshalRefId;
 
-        if (typeof (safeParams[0]?.IsElementRef) !== "undefined") {
+        if (typeof (safeParams[0]?.isElementRef) !== "undefined") {
+
             const marshalRef = safeParams[0];
 
-            marshalRefId = marshalRef.Id;
+            marshalRefId = marshalRef.id;
 
-            if (!marshalRef.IsElementRef) {
+            if (!marshalRef.isElementRef) {
+
                 safeParams.splice(0, 1);
 
                 // if we have an existing marshal reference then we'll want to call
                 const existingRef = marshalRefs.get(marshalRefId);
 
                 if (existingRef && existingRef[method]) {
-                    if (marshalRef.ClassInitializer) {
-                        existingRef[method](new globalThis[marshalRef.ClassInitializer](...safeParams));
+                    if (marshalRef.classInitializer) {
+                        existingRef[method](new globalThis[marshalRef.classInitializer](...safeParams));
                     } else {
                         existingRef[method](...safeParams);
                     }
@@ -109,10 +112,11 @@ window.Blazorex = (() => {
 
                 const marshalRefResult = ctx[method](...safeParams);
 
-                marshalRefs.set(marshalRef.Id, marshalRefResult);
+                marshalRefs.set(marshalRef.id, marshalRefResult);
 
-                return marshalRef.Id;
+                return marshalRef.id;
             }
+
 
             safeParams[0] = getElementByRef(marshalRef);
         }
@@ -128,11 +132,11 @@ window.Blazorex = (() => {
 
     const setProperty = (ctx, property, value) => {
         // Unwrap .Value or .Result if present
-        let val = value?.Value ?? value;
+        let val = value?.value ?? value;
 
         // If the unwrapped value has an Id property (string), use that
-        if (val && typeof val === "object" && "Id" in val) {
-            val = val.Id;
+        if (val && typeof val === "object" && "id" in val) {
+            val = val.id;
         }
 
         // For fillStyle and strokeStyle, resolve to pattern or gradient if available
@@ -166,48 +170,40 @@ window.Blazorex = (() => {
         }
     };
 
-    // Optimized batch processor with pre-parsed JSON caching
-    const batchCache = new Map();
     const processBatch = (ctxId, jsonBatch) => {
-        const contextInfo = contexts.get(ctxId);
-        if (!contextInfo) return;
 
-        // Cache parsed JSON to avoid repeated parsing
-        let batch = batchCache.get(jsonBatch);
-        if (!batch) {
-            try {
-                batch = JSON.parse(jsonBatch);
-                batchCache.set(jsonBatch, batch);
-            } catch {
-                return; // Fail fast on parse error
-            }
+        if (!jsonBatch || !jsonBatch.length) {
+            return;
+        }
+
+        const contextInfo = contexts.get(ctxId);
+
+        if (!contextInfo) {
+            return;
         }
 
         const ctx = contextInfo.context;
-        const batchLen = batch.length;
+        const batchLen = jsonBatch.length;
 
         // Unrolled loop for better performance
         for (let i = 0; i < batchLen; i++) {
-            const op = batch[i];
-            if (op.IsProperty) {
-                setProperty(ctx, op.MethodName, op.Args);
+            const { methodName, args, isProperty } = jsonBatch[i];
+            if (isProperty) {
+                setProperty(ctx, methodName, args);
             } else {
-                callMethod(ctx, op.MethodName, op.Args);
+                callMethod(ctx, methodName, args);
             }
         }
     };
 
     const directCall = (ctxId, methodName, jParams) => {
         const contextInfo = contexts.get(ctxId);
-        if (!contextInfo) return null;
 
-        try {
-            const params = JSON.parse(jParams);
-            const result = callMethod(contextInfo.context, methodName, params);
-            return result;
-        } catch {
-            return null; // Fail fast
+        if (!contextInfo) {
+            return null;
         }
+
+        return callMethod(contextInfo.context, methodName, jParams);
     };
 
     // Fast context removal

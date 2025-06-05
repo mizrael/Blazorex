@@ -33,9 +33,7 @@ internal sealed partial class RenderContext2D : IRenderContext
 
     async ValueTask IRenderContext.ProcessBatchAsync()
     {
-        var payload = JsonSerializer.Serialize(_jsOps);
+        await InvokeVoid("Blazorex.processBatch", _id, _jsOps);
         _jsOps.Clear();
-
-        await InvokeVoid("Blazorex.processBatch", _id, payload);
     }
 }

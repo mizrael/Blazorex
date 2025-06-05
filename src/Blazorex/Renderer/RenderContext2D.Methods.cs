@@ -64,6 +64,13 @@ internal sealed partial class RenderContext2D : IRenderContext
         );
     }
 
+    public void Reset() => Call("reset");
+
+    public void ResetTransform() => Call("resetTransform");
+
+    public void Transform(float a, float b, float c, float d, float e, float f) =>
+        Call("transform", a, b, c, d, e, f);
+
     public void StrokeText(string text, float x, float y, float? maxWidth = null)
     {
         if (maxWidth.HasValue)

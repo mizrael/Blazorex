@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blazorex.Samples</title>
+    <base href="/" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="Blazorex.Samples.FallingBlocks.styles.css" rel="stylesheet" />
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font for better readability */
+            box-sizing: border-box; /* Ensures padding and border are included in element's total width and height */
+            font-size: 12px;
+        }
+
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        #app {
+            height: 100%;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f0f0f0; /* Light background for contrast */
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #ffffff; /* White background for the canvas */
+            position: relative;
+            z-index: 10;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="_framework/blazor.webassembly.js"></script>
+</body>
+
+</html>
