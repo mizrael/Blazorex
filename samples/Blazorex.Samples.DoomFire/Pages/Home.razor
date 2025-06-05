@@ -7,18 +7,17 @@
 @code
 {
     CanvasManager _canvasManager;
-
     IRenderContext _context;
+    MouseMoveEvent _mousecoords;
+    CanvasBase _fireCanvas;
 
     int _width = 800;
     int _height = 600;
 
-    Blazorex.MouseCoords _mousecoords;
 
     float _lastUpdate = 0;
     float _elapsedTime = 0;
 
-    private CanvasBase _fireCanvas;
     private Services.FireRenderer _fireRenderer;
     private int _fireWidth = 256;
     private int _fireHeight = 64;
@@ -72,7 +71,7 @@
         this.Render();
     }
 
-    private void OnMainCanvasMouseMove(Blazorex.MouseCoords coords)
+    private void OnMainCanvasMouseMove(MouseMoveEvent coords)
     {
         _mousecoords = coords;
     }

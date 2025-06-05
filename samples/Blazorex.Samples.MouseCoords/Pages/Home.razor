@@ -7,13 +7,12 @@
 @code
 {
     CanvasManager _canvasManager;
-
     IRenderContext _context;
+    MouseMoveEvent _mousecoords;
 
     int _width = 800;
     int _height = 600;
 
-    Blazorex.MouseCoords _mousecoords;
 
     float _lastUpdate = 0;
     float _elapsedTime = 0;
@@ -46,7 +45,7 @@
         this.Render();
     }
 
-    private void OnMainCanvasMouseMove(Blazorex.MouseCoords coords)
+    private void OnMainCanvasMouseMove(MouseMoveEvent coords)
     {
         _mousecoords = coords;
     }
