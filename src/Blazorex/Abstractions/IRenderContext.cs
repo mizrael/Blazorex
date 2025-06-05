@@ -99,7 +99,7 @@ public interface IRenderContext
     /// <summary>
     /// Creates a pattern using the specified image and repeat mode for filling shapes.
     /// </summary>
-    public ICanvasPattern CreatePattern(ElementReference imageRef, RepeatPattern pattern);
+    ICanvasPattern CreatePattern(ElementReference imageRef, RepeatPattern pattern);
 
     /// <summary>
     /// Sets the transformation matrix for the context.
