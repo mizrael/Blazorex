@@ -5,14 +5,8 @@ namespace Blazorex.Renderer;
 
 internal sealed partial class RenderContext2D : IRenderContext
 {
-    internal async ValueTask<T> DirectCall<T>(string method, params object[] args)
-        => await _blazorexAPI.InvokeAsync<T>("directCall", _id, method, args);
-
-    private ValueTask InvokeVoid(string identifier, params object[] args) =>
-        _blazorexAPI.InvokeVoidAsync(identifier, args);
-
-    private ValueTask<T> Invoke<T>(string identifier, params object[] args) =>
-        _blazorexAPI.InvokeAsync<T>(identifier, args);
+    internal async ValueTask<T> DirectCall<T>(string method, params object[] args) =>
+        await _blazorexAPI.InvokeAsync<T>("directCall", _id, method, args);
 
     async ValueTask IRenderContext.ProcessBatchAsync()
     {
