@@ -5,61 +5,64 @@ public partial class Home
     private CanvasManager? _canvasManager;
     private IRenderContext? _context;
 
+    private const int CanvasWidth = 1024;
+    private const int CanvasHeight = 768;
+    private const string BackgroundColor = "#fff";
+
     protected override void OnAfterRender(bool firstRender)
     {
         if (!firstRender)
             return;
 
         _canvasManager?.CreateCanvas(
-            "main",
-            new CanvasCreationOptions()
+            "keyrain",
+            new CanvasCreationOptions
             {
                 Hidden = false,
-                Width = KeyAndMouseEngine.W,
-                Height = KeyAndMouseEngine.H,
+                Width = CanvasWidth,
+                Height = CanvasHeight,
                 Alpha = false,
-                Desynchronized = false,
-                WillReadFrequently = true,
-                OnCanvasReady = this.OnMainCanvasReady,
-                OnFrameReady = this.OnMainFrameReady,
-                OnMouseMove = (ev) =>
-                {
-                    if (_context is null)
-                    {
-                        return;
-                    }
-
-                    KeyAndMouseEngine.AddMouseTrail(ev.OffsetX, ev.OffsetY);
-                },
-                OnKeyDown = (ev) =>
-                {
-                    if (_context is null)
-                    {
-                        return;
-                    }
-
-                    KeyAndMouseEngine.PlaceAndMakeKeyCapFallDown(ev.Key);
-                }
+                Desynchronized = true, // Better performance for animations
+                WillReadFrequently = false,
+                OnCanvasReady = OnCanvasReady,
+                OnFrameReady = OnFrameReady,
+                OnKeyDown = OnKeyPressed
             }
         );
     }
 
-    private void OnMainCanvasReady(CanvasBase canvas)
+    private void OnCanvasReady(CanvasBase canvas)
     {
         _context = canvas.RenderContext;
     }
 
-    private void OnMainFrameReady(float timestamp)
+    private void OnFrameReady(float timestamp)
     {
-        if (_context != null)
-        {
-            // Clear the canvas if needed
-            _context.FillStyle = "#fff";
-            _context.FillRect(0, 0, 1024, 768);
+        if (_context is null)
+            return;
 
-            // Update and draw the mouse trail every frame
-            KeyAndMouseEngine.UpdateAndDrawFallingKeyCaps(_context);
-            KeyAndMouseEngine.UpdateAndDrawMouseTrail(_context);
+        // Clear canvas with dark background
+        _context.FillStyle = BackgroundColor;
+        _context.FillRect(0, 0, CanvasWidth, CanvasHeight);
+
+        // Update and render falling keys
+        KeyRainEngine.UpdateAndRender(_context);
+    }
+
+    private void OnKeyPressed(KeyboardPressEvent e)
+    {
+        if (_context is null)
+            return;
+
+        // Ignore modifier keys and special keys
+        if (IsValidKey(e.Key))
+        {
+            KeyRainEngine.AddKey(e.Key);
         }
     }
+
+    /// <summary>Determines if a key should create a falling character</summary>
+    private static bool IsValidKey(string key) =>
+        key.Length == 1
+        && (char.IsLetterOrDigit(key[0]) || char.IsPunctuation(key[0]) || char.IsSymbol(key[0]));
 }

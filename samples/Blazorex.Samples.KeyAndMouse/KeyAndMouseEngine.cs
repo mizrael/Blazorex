@@ -1,167 +1,168 @@
 ﻿namespace Blazorex.Samples.KeyAndMouse;
 
-public static class KeyAndMouseEngine
+/// <summary>
+/// High-performance key rain engine that visualizes keystrokes as falling characters
+/// </summary>
+public static class KeyRainEngine
 {
-    public const int W = 1024;
-    public const int H = 768;
+    public const int CanvasWidth = 1024;
+    public const int CanvasHeight = 768;
+    public const float Gravity = 0.1f;
+    public const float KeySize = 40f;
+    public const float KeyRadius = 6f;
+    public const int GroundLevel = CanvasHeight - 50;
 
-    // Constants
-    private const float Gravity = 0.1f;
-    private const float ParticleRadius = 10f;
-    private const float ParticleGravity = 0.2f;
-    private const float ParticleAlphaDecay = 0.03f;
-    private const int ParticleInitialLife = 30;
-    private const float KeyCapWidth = 60f;
-    private const float KeyCapHeight = 40f;
-    private const float KeyCapRadius = 8f;
-    private const float GroundLevel = 600f;
+    // Styling constants
+    private const string KeyBackground = "#2c3e50";
+    private const string KeyBorder = "#34495e";
+    private const string KeyText = "#ecf0f1";
+    private const string KeyFont = "bold 18px 'Segoe UI', Arial, sans-serif";
 
-    private const string KeyCapFill = "#fff";
-    private const string KeyCapStroke = "#333";
-    private const string KeyCapTextColor = "red";
-    private const string KeyCapFont = "bold 20px sans-serif";
+    // Performance: Pre-allocate list with reasonable capacity and limit max keys
+    private static readonly List<FallingKey> _fallingKeys = new(50);
+    private const int MaxKeys = 20; // Prevent performance degradation
 
-    // Use List for better perf and easier removal
-    private static readonly List<KeyCap> FallingKeyCaps = [];
-    private static readonly string[] GradientColors = ["rgba(0,150,255,0.7)", "rgba(0,150,255,0)"];
-    private static readonly List<Particle> MouseTrail = [];
+    // Prevent duplicate key events
+    private static readonly HashSet<string> _recentKeys = new();
+    private static DateTime _lastKeyTime = DateTime.MinValue;
+    private const int DedupeWindowMs = 50; // 50ms window to prevent duplicates
 
-    public static void PlaceAndMakeKeyCapFallDown(string keyLabel)
+    /// <summary>Adds a new falling key for the specified character</summary>
+    public static void AddKey(string character)
     {
-        // More efficient: find and replace in single pass
-        var existingIndex = FallingKeyCaps.FindIndex(k => k.Label == keyLabel);
-        var newKeyCap = new KeyCap(
-            keyLabel,
-            Random.Shared.NextSingle() * (W - KeyCapWidth) + KeyCapWidth / 2,
-            0,
-            0
-        );
+        // Dedupe rapid key events (keydown + keypress, etc.)
+        var now = DateTime.UtcNow;
+        var keyId = $"{character}_{now.Ticks / 500000}"; // 50ms buckets
 
-        if (existingIndex >= 0)
+        if (_recentKeys.Contains(keyId))
         {
-            FallingKeyCaps[existingIndex] = newKeyCap;
+            return; // Duplicate within time window
         }
-        else
+
+        // Clean old entries periodically
+        if ((now - _lastKeyTime).TotalMilliseconds > DedupeWindowMs * 2)
         {
-            FallingKeyCaps.Add(newKeyCap);
+            _recentKeys.Clear();
         }
+
+        _recentKeys.Add(keyId);
+        _lastKeyTime = now;
+
+        // Performance: Limit number of simultaneous keys
+        if (_fallingKeys.Count >= MaxKeys)
+        {
+            _fallingKeys.RemoveAt(0); // Remove oldest key
+        }
+
+        // Clamp character to single char for display
+        var displayChar = string.IsNullOrEmpty(character)
+            ? "?"
+            : character[0].ToString().ToUpperInvariant();
+
+        // Generate random X position ensuring key stays within bounds
+        var x = Random.Shared.NextSingle() * (CanvasWidth - KeySize) + KeySize / 2;
+
+        _fallingKeys.Add(new FallingKey(displayChar, x, -KeySize, 0f));
     }
 
-    public static void AddMouseTrail(double x, double y)
+    /// <summary>Updates physics and renders all falling keys</summary>
+    public static void UpdateAndRender(IRenderContext ctx)
     {
-        if (MouseTrail.Count > 200)
+        // CRITICAL: Clear canvas completely to prevent trails
+        ctx.ClearRect(0, 0, CanvasWidth, CanvasHeight);
+
+        // Set dark background
+        ctx.FillStyle = "#1a1a1a";
+        ctx.FillRect(0, 0, CanvasWidth, CanvasHeight);
+
+        // Process keys in reverse order for safe removal
+        for (var i = _fallingKeys.Count - 1; i >= 0; i--)
         {
-            MouseTrail.RemoveAt(0);
-        }
+            var key = _fallingKeys[i];
 
-        MouseTrail.Add(
-            new Particle(
-                x,
-                y,
-                (Random.Shared.NextSingle() - 0.5f) * 1.5f,
-                (Random.Shared.NextSingle() - 0.5f) * 1.5f,
-                1.0f,
-                ParticleInitialLife
-            )
-        );
-    }
+            // Update physics
+            var updatedKey = key.Update();
 
-    public static void UpdateAndDrawMouseTrail(IRenderContext ctx)
-    {
-        for (int i = MouseTrail.Count - 1; i >= 0; i--)
-        {
-            var p = MouseTrail[i].Update();
-
-            if (p.Life <= 0 || p.Alpha <= 0)
+            // Remove if below ground level
+            if (updatedKey.Y > GroundLevel)
             {
-                MouseTrail.RemoveAt(i);
+                _fallingKeys.RemoveAt(i);
                 continue;
             }
 
-            ctx.Save();
-            ctx.GlobalAlpha = MathF.Max(0, p.Alpha);
+            // Render the key
+            RenderKey(ctx, updatedKey);
 
-            // Clear any existing stroke settings from previous draws
-            ctx.LineWidth = 0;
-            ctx.StrokeStyle = "transparent";
-
-            var grad = ctx.CreateRadialGradient(
-                (float)p.X,
-                (float)p.Y,
-                0,
-                (float)p.X,
-                (float)p.Y,
-                ParticleRadius
-            );
-            grad.AddColorStop(0, GradientColors[0]);
-            grad.AddColorStop(1, GradientColors[1]);
-            ctx.FillStyle = grad;
-            ctx.BeginPath();
-            ctx.Arc((float)p.X, (float)p.Y, ParticleRadius, 0, MathF.Tau);
-            ctx.Fill(); // Only fill, explicitly no stroke
-            ctx.Restore();
-
-            MouseTrail[i] = p;
+            // Update the key in place
+            _fallingKeys[i] = updatedKey;
         }
     }
 
-    public static void UpdateAndDrawFallingKeyCaps(IRenderContext ctx)
+    /// <summary>Renders a single falling key with modern styling</summary>
+    private static void RenderKey(IRenderContext ctx, FallingKey key)
     {
-        for (int i = FallingKeyCaps.Count - 1; i >= 0; i--)
+        // Performance: Avoid Save/Restore for better performance
+        // Store current state
+        var previousFillStyle = ctx.FillStyle;
+        var previousStrokeStyle = ctx.StrokeStyle;
+        var previousLineWidth = ctx.LineWidth;
+        var previousFont = ctx.Font;
+        var previousTextAlign = ctx.TextAlign;
+        var previousTextBaseline = ctx.TextBaseline;
+
+        try
         {
-            var cap = FallingKeyCaps[i].Fall();
-
-            if (cap.Y > GroundLevel)
-            {
-                FallingKeyCaps.RemoveAt(i);
-                continue;
-            }
-
-            ctx.Save();
-            ctx.FillStyle = KeyCapFill;
-            ctx.StrokeStyle = KeyCapStroke;
+            // Draw key background with rounded corners
+            ctx.FillStyle = KeyBackground;
+            ctx.StrokeStyle = KeyBorder;
             ctx.LineWidth = 2;
-            ctx.RoundRect(cap.X - KeyCapWidth / 2, cap.Y, KeyCapWidth, KeyCapHeight, KeyCapRadius);
+
+            var keyLeft = key.X - KeySize / 2;
+            var keyTop = key.Y;
+
+            ctx.BeginPath();
+            ctx.RoundRect(keyLeft, keyTop, KeySize, KeySize, KeyRadius);
             ctx.Fill();
             ctx.Stroke();
 
-            ctx.Font = KeyCapFont;
-            ctx.FillStyle = KeyCapTextColor;
+            // Draw character text
+            ctx.Font = KeyFont;
+            ctx.FillStyle = KeyText;
             ctx.TextAlign = TextAlign.Center;
             ctx.TextBaseline = TextBaseline.Middle;
-            ctx.FillText(cap.Label, cap.X, cap.Y + KeyCapHeight / 2);
-            ctx.Restore();
 
-            FallingKeyCaps[i] = cap;
+            var textX = key.X;
+            var textY = key.Y + KeySize / 2;
+
+            ctx.FillText(key.Character, textX, textY);
+        }
+        finally
+        {
+            // Restore state manually for better performance
+            ctx.FillStyle = previousFillStyle;
+            ctx.StrokeStyle = previousStrokeStyle;
+            ctx.LineWidth = previousLineWidth;
+            ctx.Font = previousFont;
+            ctx.TextAlign = previousTextAlign ?? TextAlign.Center;
+            ctx.TextBaseline = previousTextBaseline ?? TextBaseline.Middle;
         }
     }
 
-    private readonly record struct KeyCap(string Label, float X, float Y, float Velocity)
-    {
-        public KeyCap Fall() =>
-            this with
-            {
-                Velocity = Velocity + Gravity,
-                Y = Y + Velocity + Gravity // Use updated velocity
-            };
-    }
+    /// <summary>Gets current number of active falling keys</summary>
+    public static int ActiveKeyCount => _fallingKeys.Count;
 
-    private readonly record struct Particle(
-        double X,
-        double Y,
-        float VX,
-        float VY,
-        float Alpha,
-        int Life
-    )
-    {
-        public Particle Update() =>
-            this with
-            {
-                X = X + VX,
-                Y = Y + VY + ParticleGravity,
-                Life = Life - 1,
-                Alpha = Alpha - ParticleAlphaDecay
-            };
-    }
+    /// <summary>Clears all falling keys</summary>
+    public static void Clear() => _fallingKeys.Clear();
+}
+
+/// <summary>Immutable record representing a falling key with physics</summary>
+public readonly record struct FallingKey(string Character, float X, float Y, float Velocity)
+{
+    /// <summary>Updates key position and velocity for next frame</summary>
+    public FallingKey Update() =>
+        this with
+        {
+            Velocity = Velocity + KeyRainEngine.Gravity,
+            Y = Y + Velocity
+        };
 }
