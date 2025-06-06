@@ -9,6 +9,8 @@ namespace Blazorex;
 public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 {
     private bool _disposed = false;
+    private IJSObjectReference _module;
+    private IJSObjectReference _blazorexAPI;
 
     protected override async Task OnInitializedAsync()
     {
@@ -23,12 +25,16 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
         if (!firstRender)
             return;
 
-        await this.JSRuntime.InvokeVoidAsync("import", "./_content/Blazorex/blazorex.js");
+        this._module = await this.JSRuntime.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/Blazorex/blazorex.js"
+        );
+        this._blazorexAPI = await _module.InvokeAsync<IJSObjectReference>("createBlazorexAPI");
 
         var managedInstance = DotNetObjectReference.Create(this);
 
-        await this.JSRuntime.InvokeVoidAsync(
-            "Blazorex.initCanvas",
+        await this._blazorexAPI.InvokeVoidAsync(
+            "initCanvas",
             this.Id,
             managedInstance,
             new
@@ -42,7 +48,7 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
             }
         );
 
-        this.RenderContext = new RenderContext2D(this.Id, this.JSRuntime);
+        this.RenderContext = new RenderContext2D(this.Id, this._blazorexAPI);
 
         await this.OnCanvasReady.InvokeAsync(this);
     }
@@ -192,17 +198,17 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
     /// <param name="height">New canvas height</param>
     public void Resize(int width, int height)
     {
-        if (RenderContext == null)
+        if (this.RenderContext == null)
             throw new InvalidOperationException(
                 "Canvas not ready. Ensure OnCanvasReady has been called."
             );
 
         // Update the component properties
-        Width = width;
-        Height = height;
+        this.Width = width;
+        this.Height = height;
 
         // Trigger the resize operation
-        RenderContext.Resize(width, height);
+        this.RenderContext.Resize(width, height);
     }
 
     #endregion Public Methods
@@ -211,10 +217,20 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (!_disposed)
+        if (!this._disposed)
         {
-            await JSRuntime.InvokeVoidAsync("Blazorex.removeContext", Id);
-            _disposed = true;
+            if (this._blazorexAPI != null)
+            {
+                await this._blazorexAPI.InvokeVoidAsync("removeContext", Id);
+                await this._blazorexAPI.DisposeAsync();
+            }
+
+            if (_module != null)
+            {
+                await this._module.DisposeAsync();
+            }
+
+            this._disposed = true;
         }
     }
 
