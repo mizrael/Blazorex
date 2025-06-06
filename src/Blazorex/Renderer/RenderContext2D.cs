@@ -8,12 +8,11 @@ namespace Blazorex.Renderer;
 internal sealed partial class RenderContext2D : IRenderContext
 {
     private readonly string _id;
-    private readonly IJSRuntime _jsRuntime;
-    private readonly IJSInProcessRuntime _inProcessJsRuntime;
+    private readonly IJSObjectReference _blazorexAPI;
     private readonly MarshalReferencePool _marshalReferenceCache;
     private readonly Queue<JsOp> _jsOps = new();
 
-    public RenderContext2D(string id, IJSRuntime jsRuntime)
+    public RenderContext2D(string id, IJSObjectReference blazorexAPI)
     {
         if (string.IsNullOrWhiteSpace(id))
         {
@@ -24,8 +23,7 @@ internal sealed partial class RenderContext2D : IRenderContext
         }
 
         _id = id;
-        _jsRuntime = jsRuntime;
-        _inProcessJsRuntime = jsRuntime as IJSInProcessRuntime;
+        _blazorexAPI = blazorexAPI;
         _marshalReferenceCache = new MarshalReferencePool();
     }
 

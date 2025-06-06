@@ -9,6 +9,8 @@ namespace Blazorex;
 public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 {
     private bool _disposed = false;
+    private IJSObjectReference _module;
+    private IJSObjectReference _blazorexAPI;
 
     protected override async Task OnInitializedAsync()
     {
@@ -23,12 +25,13 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
         if (!firstRender)
             return;
 
-        await this.JSRuntime.InvokeVoidAsync("import", "./_content/Blazorex/blazorex.js");
+        _module = await this.JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Blazorex/blazorex.js");
+        _blazorexAPI = await _module.InvokeAsync<IJSObjectReference>("createBlazorexAPI");
 
         var managedInstance = DotNetObjectReference.Create(this);
 
-        await this.JSRuntime.InvokeVoidAsync(
-            "Blazorex.initCanvas",
+        await _blazorexAPI.InvokeVoidAsync(
+            "initCanvas",
             this.Id,
             managedInstance,
             new
@@ -42,7 +45,7 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
             }
         );
 
-        this.RenderContext = new RenderContext2D(this.Id, this.JSRuntime);
+        this.RenderContext = new RenderContext2D(this.Id, _blazorexAPI);
 
         await this.OnCanvasReady.InvokeAsync(this);
     }
@@ -213,7 +216,17 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
     {
         if (!_disposed)
         {
-            await JSRuntime.InvokeVoidAsync("Blazorex.removeContext", Id);
+            if (_blazorexAPI != null)
+            {
+                await _blazorexAPI.InvokeVoidAsync("removeContext", Id);
+                await _blazorexAPI.DisposeAsync();
+            }
+            
+            if (_module != null)
+            {
+                await _module.DisposeAsync();
+            }
+            
             _disposed = true;
         }
     }

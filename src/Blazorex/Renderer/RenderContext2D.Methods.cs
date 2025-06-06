@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Blazorex.Interop;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Blazorex.Renderer;
 
@@ -18,12 +19,8 @@ internal sealed partial class RenderContext2D : IRenderContext
     public void FillRect(float x, float y, float width, float height) =>
         Call("fillRect", x, y, width, height);
 
-    public void DrawImage(ElementReference imageRef, float x, float y)
-    {
-        var innerRef = _marshalReferenceCache.Next(imageRef);
-
-        Call("drawImage", innerRef, x, y);
-    }
+    public void DrawImage(ElementReference imageRef, float x, float y) =>
+        Call("drawImage", _marshalReferenceCache.Next(imageRef), x, y);
 
     public void DrawImage(
         ElementReference imageRef,
@@ -31,11 +28,7 @@ internal sealed partial class RenderContext2D : IRenderContext
         float y,
         float imageWidth,
         float imageHeight
-    )
-    {
-        var innerRef = _marshalReferenceCache.Next(imageRef);
-        Call("drawImage", innerRef, x, y, imageWidth, imageHeight);
-    }
+    ) => Call("drawImage", _marshalReferenceCache.Next(imageRef), x, y, imageWidth, imageHeight);
 
     public void DrawImage(
         ElementReference imageRef,
@@ -47,12 +40,10 @@ internal sealed partial class RenderContext2D : IRenderContext
         float destY,
         float destWidth,
         float destHeight
-    )
-    {
-        var innerRef = _marshalReferenceCache.Next(imageRef);
+    ) =>
         Call(
             "drawImage",
-            innerRef,
+            _marshalReferenceCache.Next(imageRef),
             sourceX,
             sourceY,
             sourceWidth,
@@ -62,7 +53,6 @@ internal sealed partial class RenderContext2D : IRenderContext
             destWidth,
             destHeight
         );
-    }
 
     public void Reset() => Call("reset");
 
@@ -71,27 +61,21 @@ internal sealed partial class RenderContext2D : IRenderContext
     public void Transform(float a, float b, float c, float d, float e, float f) =>
         Call("transform", a, b, c, d, e, f);
 
-    public void StrokeText(string text, float x, float y, float? maxWidth = null)
-    {
-        if (maxWidth.HasValue)
-            Call("strokeText", text, x, y, maxWidth.Value);
-        else
-            Call("strokeText", text, x, y);
-    }
+    public void StrokeText(string text, float x, float y) => Call("strokeText", text, x, y);
 
-    public void FillText(string text, float x, float y, float? maxWidth = null)
-    {
-        if (maxWidth.HasValue)
-            Call("fillText", text, x, y, maxWidth.Value);
-        else
-            Call("fillText", text, x, y);
-    }
+    public void StrokeText(string text, float x, float y, float maxWidth) =>
+        Call("strokeText", text, x, y, maxWidth);
+
+    public void FillText(string text, float x, float y) => Call("fillText", text, x, y);
+
+    public void FillText(string text, float x, float y, float maxWidth) =>
+        Call("fillText", text, x, y, maxWidth);
 
     public ValueTask<int> CreateImageDataAsync(int width, int height) =>
-        Invoke<int>("Blazorex.createImageData", _id, width, height);
+        _blazorexAPI.InvokeAsync<int>("createImageData", _id, width, height);
 
-    public async void PutImageData(int imageDataId, byte[] data, double x, double y) =>
-        await InvokeVoid("Blazorex.putImageData", _id, imageDataId, data, x, y);
+    public void PutImageData(int imageDataId, byte[] data, double x, double y) =>
+        _blazorexAPI.InvokeVoidAsync("putImageData", _id, imageDataId, data, x, y);
 
     public ValueTask<TextMetrics> MeasureText(string text) =>
         DirectCall<TextMetrics>("measureText", text);
@@ -139,7 +123,7 @@ internal sealed partial class RenderContext2D : IRenderContext
     public void SetLineDash(params float[] segments) => Call("setLineDash", segments);
 
     public async void Resize(int width, int height) =>
-        await InvokeVoid("Blazorex.resizeCanvas", _id, width, height);
+        await _blazorexAPI.InvokeVoidAsync("resizeCanvas", _id, width, height);
 
     public ICanvasPattern CreatePattern(ElementReference imageRef, RepeatPattern pattern)
     {
