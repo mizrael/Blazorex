@@ -20,7 +20,7 @@ internal sealed partial class RenderContext2D : IRenderContext
         this.Call("fillRect", x, y, width, height);
 
     public void DrawImage(ElementReference imageRef, float x, float y) =>
-        this.Call("drawImage", _marshalReferenceCache.Next(imageRef), x, y);
+        this.Call("drawImage", this._marshalReferenceCache.Next(imageRef), x, y);
 
     public void DrawImage(
         ElementReference imageRef,
@@ -31,7 +31,7 @@ internal sealed partial class RenderContext2D : IRenderContext
     ) =>
         this.Call(
             "drawImage",
-            _marshalReferenceCache.Next(imageRef),
+            this._marshalReferenceCache.Next(imageRef),
             x,
             y,
             imageWidth,
@@ -51,7 +51,7 @@ internal sealed partial class RenderContext2D : IRenderContext
     ) =>
         this.Call(
             "drawImage",
-            _marshalReferenceCache.Next(imageRef),
+            this._marshalReferenceCache.Next(imageRef),
             sourceX,
             sourceY,
             sourceWidth,
