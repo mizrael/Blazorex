@@ -99,12 +99,17 @@ public interface IRenderContext
     /// <summary>
     /// Creates a pattern using the specified image and repeat mode for filling shapes.
     /// </summary>
-    public ICanvasPattern CreatePattern(ElementReference imageRef, RepeatPattern pattern);
+    ICanvasPattern CreatePattern(ElementReference imageRef, RepeatPattern pattern);
 
     /// <summary>
     /// Sets the transformation matrix for the context.
     /// </summary>
     void SetTransform(float a, float b, float c, float d, float e, float f);
+
+    /// <summary>
+    /// The CanvasRenderingContext2D.transform() method of the Canvas 2D API multiplies the current transformation with the matrix described by the arguments of this method. This lets you scale, rotate, translate (move), and skew the context.
+    /// </summary>
+    void Transform(float a, float b, float c, float d, float e, float f);
 
     /// <summary>
     /// Moves the origin of the context to the specified coordinates.
@@ -252,6 +257,36 @@ public interface IRenderContext
     /// Resizes the canvas to the specified width and height.
     /// </summary>
     void Resize(int width, int height);
+
+    /// <summary>
+    /// Resets the rendering context to its default state, allowing it to be reused for drawing something else without having to explicitly reset all the properties.
+    /// </summary>
+    void Reset();
+
+    /// <summary>
+    /// Resets the current transform to the identity matrix.
+    /// </summary>
+    void ResetTransform();
+
+    /// <summary>
+    /// ShadowColor property of the canvas specifies the color of shadows.
+    /// </summary>
+    string ShadowColor { get; set; }
+
+    /// <summary>
+    /// ShadowOffsetX property of the canvas specifies the distance that shadows will be offset horizontally.
+    /// </summary>
+    float ShadowOffsetX { get; set; }
+
+    /// <summary>
+    /// ShadowOffsetY property of the canvas specifies the distance that shadows will be offset vertically.
+    /// </summary>
+    float ShadowOffsetY { get; set; }
+
+    /// <summary>
+    /// ShadowBlur property of the canvasI specifies the amount of blur applied to shadows. The default is 0 (no blur).
+    /// </summary>
+    float ShadowBlur { get; set; }
 
     /// <summary>
     /// Creates a linear gradient along the line connecting two given coordinates.

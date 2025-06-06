@@ -16,7 +16,7 @@ internal readonly record struct JsOp
     [JsonInclude]
     public readonly object Args;
 
-    private JsOp(string methodName, object? args, bool isProperty) =>
+    private JsOp(string methodName, object args, bool isProperty) =>
         (MethodName, Args, IsProperty) = (methodName, args, isProperty);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

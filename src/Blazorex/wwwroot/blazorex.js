@@ -3,19 +3,25 @@ window.Blazorex = (() => {
     const elementRefs = new Map();
     const marshalRefs = new Map();
     const images = new Map();
+    const heldKeys = new Set();
+    const modifierState = { shift: false, ctrl: false, alt: false, meta: false };
 
     // Pre-compiled event data extractors for zero-overhead event handling
     const eventExtractors = Object.freeze({
         wheel: e => ({ deltaX: e.deltaX, deltaY: e.deltaY, clientX: e.clientX, clientY: e.clientY }),
         mousedown: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button }),
-        mouseup: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button })
+        mouseup: e => ({ clientX: e.clientX, clientY: e.clientY, button: e.button }),
+        touchstart: e => ({ clientX: e.touches[0]?.clientX || 0, clientY: e.touches[0]?.clientY || 0, button: 0 }),
+        touchend: e => ({ clientX: e.changedTouches[0]?.clientX || 0, clientY: e.changedTouches[0]?.clientY || 0, button: 0 })
     });
 
     // Optimized event method name mapping with pre-computed capitalization
     const eventMethodMap = Object.freeze({
         wheel: 'Wheel',
         mousedown: 'MouseDown',
-        mouseup: 'MouseUp'
+        mouseup: 'MouseUp',
+        touchstart: 'MouseDown', // Map touch to mouse events
+        touchend: 'MouseUp'
     });
 
     // High-performance event handler factory with pre-bound contexts
@@ -34,10 +40,13 @@ window.Blazorex = (() => {
         if (!canvas) return;
 
         // Batch DOM operations and use passive listeners where possible
-        const eventOptions = { passive: false }; // Canvas interactions need preventDefault capability
+        const eventOptions = { passive: false };
         canvas.addEventListener('wheel', createEventHandler(managedInstance, 'wheel'), eventOptions);
         canvas.addEventListener('mousedown', createEventHandler(managedInstance, 'mousedown'), eventOptions);
         canvas.addEventListener('mouseup', createEventHandler(managedInstance, 'mouseup'), eventOptions);
+        // Add touch support
+        canvas.addEventListener('touchstart', createEventHandler(managedInstance, 'touchstart'), eventOptions);
+        canvas.addEventListener('touchend', createEventHandler(managedInstance, 'touchend'), eventOptions);
 
         contexts.set(id, {
             id,
@@ -47,9 +56,17 @@ window.Blazorex = (() => {
         });
     };
 
+    // Update modifier state tracking
+    const updateModifierState = (event) => {
+        modifierState.shift = event.shiftKey;
+        modifierState.ctrl = event.ctrlKey;
+        modifierState.alt = event.altKey;
+        modifierState.meta = event.metaKey;
+    };
+
     // This function retrieves the DOM element associated with a given ElementRef.
     const getElementByRef = (ref) => {
-        const refId = `_bl_${ref.Id}`;
+        const refId = `_bl_${ref.id}`;
         let elem = elementRefs.get(refId);
 
         if (!elem) {
@@ -71,13 +88,13 @@ window.Blazorex = (() => {
 
         let marshalRefId;
 
-        if (typeof (safeParams[0]?.IsElementRef) !== "undefined") {
+        if (typeof (safeParams[0]?.isElementRef) !== "undefined") {
 
             const marshalRef = safeParams[0];
 
-            marshalRefId = marshalRef.Id;
+            marshalRefId = marshalRef.id;
 
-            if (!marshalRef.IsElementRef) {
+            if (!marshalRef.isElementRef) {
 
                 safeParams.splice(0, 1);
 
@@ -85,8 +102,8 @@ window.Blazorex = (() => {
                 const existingRef = marshalRefs.get(marshalRefId);
 
                 if (existingRef && existingRef[method]) {
-                    if (marshalRef.ClassInitializer) {
-                        existingRef[method](new globalThis[marshalRef.ClassInitializer](...safeParams));
+                    if (marshalRef.classInitializer) {
+                        existingRef[method](new globalThis[marshalRef.classInitializer](...safeParams));
                     } else {
                         existingRef[method](...safeParams);
                     }
@@ -95,14 +112,14 @@ window.Blazorex = (() => {
 
                 const marshalRefResult = ctx[method](...safeParams);
 
-                marshalRefs.set(marshalRef.Id, marshalRefResult);
+                marshalRefs.set(marshalRef.id, marshalRefResult);
 
-                return marshalRef.Id;
+                return marshalRef.id;
             }
+
 
             safeParams[0] = getElementByRef(marshalRef);
         }
-
 
         const result = ctx[method](...safeParams);
 
@@ -115,11 +132,11 @@ window.Blazorex = (() => {
 
     const setProperty = (ctx, property, value) => {
         // Unwrap .Value or .Result if present
-        let val = value?.Value ?? value;
+        let val = value?.value ?? value;
 
         // If the unwrapped value has an Id property (string), use that
-        if (val && typeof val === "object" && "Id" in val) {
-            val = val.Id;
+        if (val && typeof val === "object" && "id" in val) {
+            val = val.id;
         }
 
         // For fillStyle and strokeStyle, resolve to pattern or gradient if available
@@ -153,48 +170,40 @@ window.Blazorex = (() => {
         }
     };
 
-    // Optimized batch processor with pre-parsed JSON caching
-    const batchCache = new Map();
     const processBatch = (ctxId, jsonBatch) => {
-        const contextInfo = contexts.get(ctxId);
-        if (!contextInfo) return;
 
-        // Cache parsed JSON to avoid repeated parsing
-        let batch = batchCache.get(jsonBatch);
-        if (!batch) {
-            try {
-                batch = JSON.parse(jsonBatch);
-                batchCache.set(jsonBatch, batch);
-            } catch {
-                return; // Fail fast on parse error
-            }
+        if (!jsonBatch || !jsonBatch.length) {
+            return;
+        }
+
+        const contextInfo = contexts.get(ctxId);
+
+        if (!contextInfo) {
+            return;
         }
 
         const ctx = contextInfo.context;
-        const batchLen = batch.length;
+        const batchLen = jsonBatch.length;
 
         // Unrolled loop for better performance
         for (let i = 0; i < batchLen; i++) {
-            const op = batch[i];
-            if (op.IsProperty) {
-                setProperty(ctx, op.MethodName, op.Args);
+            const { methodName, args, isProperty } = jsonBatch[i];
+            if (isProperty) {
+                setProperty(ctx, methodName, args);
             } else {
-                callMethod(ctx, op.MethodName, op.Args);
+                callMethod(ctx, methodName, args);
             }
         }
     };
 
     const directCall = (ctxId, methodName, jParams) => {
         const contextInfo = contexts.get(ctxId);
-        if (!contextInfo) return null;
 
-        try {
-            const params = JSON.parse(jParams);
-            const result = callMethod(contextInfo.context, methodName, params);
-            return result;
-        } catch {
-            return null; // Fail fast
+        if (!contextInfo) {
+            return null;
         }
+
+        return callMethod(contextInfo.context, methodName, jParams);
     };
 
     // Fast context removal
@@ -246,17 +255,57 @@ window.Blazorex = (() => {
     };
 
     // High-performance global event handlers
-    const handleKeyUp = ({ keyCode }) => {
+    const handleKeyUp = (event) => {
+        const { keyCode, key } = event;
+        updateModifierState(event);
+
         if (keyEventContexts.length !== contexts.size) updateEventContextCaches();
+
+        // Remove from held keys
+        heldKeys.delete(keyCode);
+
+        // Create augmented event data
+        const eventData = {
+            keyCode,
+            key,
+            isHeld: heldKeys.has(keyCode), // Will be false since we just deleted it
+            heldKeys: Array.from(heldKeys),
+            modifiers: { ...modifierState }
+        };
+
         for (let i = 0; i < keyEventContexts.length; i++) {
-            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyReleased', keyCode);
+            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyReleased', eventData);
         }
     };
 
-    const handleKeyDown = ({ keyCode }) => {
+    const handleKeyDown = (event) => {
+        const { keyCode, key } = event;
+        updateModifierState(event);
+
         if (keyEventContexts.length !== contexts.size) updateEventContextCaches();
+
+        // Track held keys
+        heldKeys.add(keyCode);
+
+        // Create augmented event data
+        const eventData = {
+            keyCode,
+            key,
+            isHeld: true, // Always true for keydown
+            heldKeys: Array.from(heldKeys),
+            modifiers: { ...modifierState }
+        };
+
+        // Send KeyPressed event with augmented data
         for (let i = 0; i < keyEventContexts.length; i++) {
-            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyPressed', keyCode);
+            keyEventContexts[i].managedInstance.invokeMethodAsync('KeyPressed', eventData);
+        }
+
+        // Send KeyPress event for printable characters
+        if (key.length === 1 || ['Enter', 'Tab', 'Backspace', 'Delete'].includes(key)) {
+            for (let i = 0; i < keyEventContexts.length; i++) {
+                keyEventContexts[i].managedInstance.invokeMethodAsync('KeyPressed', eventData);
+            }
         }
     };
 

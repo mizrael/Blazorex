@@ -1,6 +1,4 @@
-﻿using Blazorex.Abstractions;
-
-namespace Blazorex.Samples.Services;
+﻿namespace Blazorex.Samples.Services;
 
 public class FireRenderer
 {

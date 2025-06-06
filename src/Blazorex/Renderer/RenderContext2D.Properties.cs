@@ -145,4 +145,52 @@ internal sealed partial class RenderContext2D : IRenderContext
             this.SetProperty("imageSmoothingEnabled", value);
         }
     }
+
+    private string _shadowColor;
+
+    public string ShadowColor
+    {
+        get => _shadowColor;
+        set
+        {
+            _shadowColor = value;
+            this.SetProperty("shadowColor", value);
+        }
+    }
+
+    private float _shadowOffsetX;
+
+    public float ShadowOffsetX
+    {
+        get => _shadowOffsetX;
+        set
+        {
+            _shadowOffsetX = value;
+            this.SetProperty("shadowOffsetX ", value);
+        }
+    }
+
+    private float _shadowOffsetY;
+
+    public float ShadowOffsetY
+    {
+        get => _shadowOffsetY;
+        set
+        {
+            _shadowOffsetY = value;
+            this.SetProperty("shadowOffsetY ", value);
+        }
+    }
+
+    private float _shadowBlur;
+
+    public float ShadowBlur
+    {
+        get => _shadowBlur;
+        set
+        {
+            _shadowBlur = value;
+            this.SetProperty("shadowBlur", value);
+        }
+    }
 }

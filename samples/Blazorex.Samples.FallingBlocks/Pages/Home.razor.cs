@@ -30,7 +30,7 @@ public partial class Home
                         return;
                     }
 
-                    game.KeyUp(key);
+                    game.KeyUp(key.KeyCode);
                 },
             }
         );

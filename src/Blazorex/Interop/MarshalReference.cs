@@ -18,10 +18,10 @@ internal readonly record struct MarshalReference
             Condition = JsonIgnoreCondition.WhenWritingDefault | JsonIgnoreCondition.WhenWritingNull
         )
     ]
-    public string? ClassInitializer { get; init; }
+    public string ClassInitializer { get; init; }
 
     /// <summary>Primary constructor with validation</summary>
-    public MarshalReference(int id, bool isElementRef = false, string? classInitializer = null)
+    public MarshalReference(int id, bool isElementRef = false, string classInitializer = null)
     {
         (Id, IsElementRef, ClassInitializer) = (id, isElementRef, classInitializer);
     }
