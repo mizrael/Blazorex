@@ -13,6 +13,7 @@ public static class KeyRainEngine
     public const int GroundLevel = CanvasHeight - 50;
 
     // Styling constants
+    private const string CanvasBackground = "#fff";
     private const string KeyBackground = "#2c3e50";
     private const string KeyBorder = "#34495e";
     private const string KeyText = "#ecf0f1";
@@ -68,11 +69,8 @@ public static class KeyRainEngine
     /// <summary>Updates physics and renders all falling keys</summary>
     public static void UpdateAndRender(IRenderContext ctx)
     {
-        // CRITICAL: Clear canvas completely to prevent trails
-        ctx.ClearRect(0, 0, CanvasWidth, CanvasHeight);
-
         // Set dark background
-        ctx.FillStyle = "#1a1a1a";
+        ctx.FillStyle = CanvasBackground;
         ctx.FillRect(0, 0, CanvasWidth, CanvasHeight);
 
         // Process keys in reverse order for safe removal

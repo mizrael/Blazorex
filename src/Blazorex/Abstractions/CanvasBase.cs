@@ -12,10 +12,10 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 
     protected override async Task OnInitializedAsync()
     {
-        if (CanvasManager is null)
+        if (this.CanvasManager is null)
             return;
 
-        await CanvasManager.OnChildCanvasAddedAsync(this);
+        await this.CanvasManager.OnChildCanvasAddedAsync(this);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -23,26 +23,28 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
         if (!firstRender)
             return;
 
-        await JSRuntime.InvokeVoidAsync("import", "./_content/Blazorex/blazorex.js");
+        await this.JSRuntime.InvokeVoidAsync("import", "./_content/Blazorex/blazorex.js");
 
         var managedInstance = DotNetObjectReference.Create(this);
 
-        await JSRuntime.InvokeVoidAsync(
+        await this.JSRuntime.InvokeVoidAsync(
             "Blazorex.initCanvas",
-            Id,
+            this.Id,
             managedInstance,
             new
             {
-                alpha = Alpha,
-                desynchronized = Desynchronized,
-                colorSpace = ColorSpace != null ? ColorSpace.Value : ColorSpace.Srgb.Value,
-                willReadFrequently = WillReadFrequently
+                alpha = this.Alpha,
+                desynchronized = this.Desynchronized,
+                colorSpace = this.ColorSpace != null
+                    ? this.ColorSpace.Value
+                    : ColorSpace.Srgb.Value,
+                willReadFrequently = this.WillReadFrequently
             }
         );
 
-        RenderContext = new RenderContext2D(Id, JSRuntime);
+        this.RenderContext = new RenderContext2D(this.Id, this.JSRuntime);
 
-        await OnCanvasReady.InvokeAsync(this);
+        await this.OnCanvasReady.InvokeAsync(this);
     }
 
     #region JS interop
@@ -50,50 +52,50 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public async ValueTask UpdateFrame(float timeStamp)
     {
-        await OnFrameReady.InvokeAsync(timeStamp);
-        await RenderContext.ProcessBatchAsync();
+        await this.OnFrameReady.InvokeAsync(timeStamp);
+        await this.RenderContext.ProcessBatchAsync();
     }
 
     [JSInvokable]
     public async ValueTask Resized(int width, int height)
     {
-        await OnResize.InvokeAsync(new Size(width, height));
+        await this.OnResize.InvokeAsync(new Size(width, height));
     }
 
     [JSInvokable]
     public async ValueTask KeyPressed(KeyboardPressEvent keyCode)
     {
-        await OnKeyDown.InvokeAsync(keyCode);
+        await this.OnKeyDown.InvokeAsync(keyCode);
     }
 
     [JSInvokable]
     public async ValueTask KeyReleased(KeyboardPressEvent keyCode)
     {
-        await OnKeyUp.InvokeAsync(keyCode);
+        await this.OnKeyUp.InvokeAsync(keyCode);
     }
 
     [JSInvokable]
-    public async ValueTask MouseMoved(MouseMoveEvent coords)
+    public async ValueTask MouseMoved(MouseMoveEvent coordinates)
     {
-        await OnMouseMove.InvokeAsync(coords);
+        await this.OnMouseMove.InvokeAsync(coordinates);
     }
 
     [JSInvokable]
     public async ValueTask Wheel(MouseScrollEvent evt)
     {
-        await OnMouseWheel.InvokeAsync(evt);
+        await this.OnMouseWheel.InvokeAsync(evt);
     }
 
     [JSInvokable]
     public async ValueTask MouseDown(MouseClickEvent evt)
     {
-        await OnMouseDown.InvokeAsync(evt);
+        await this.OnMouseDown.InvokeAsync(evt);
     }
 
     [JSInvokable]
     public async ValueTask MouseUp(MouseClickEvent evt)
     {
-        await OnMouseUp.InvokeAsync(evt);
+        await this.OnMouseUp.InvokeAsync(evt);
     }
 
     #endregion JS interop
@@ -153,7 +155,7 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Specifies the color space of the rendering context. Possible values are:
-    ///     "srgb" selects the sRGB color space.This is the default value.
+    ///     "sRGB" selects the sRGB color space.This is the default value.
     ///     "display-p3" selects the display-p3 color space.
     /// </summary>
     [Parameter]
@@ -211,9 +213,7 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
     {
         if (!_disposed)
         {
-            // Call javascript to delete this canvas Id from the _contexts array
             await JSRuntime.InvokeVoidAsync("Blazorex.removeContext", Id);
-
             _disposed = true;
         }
     }

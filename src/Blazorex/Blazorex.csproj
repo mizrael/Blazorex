@@ -35,11 +35,16 @@
 		<None Include="../../readme.md" Pack="true" PackagePath="\">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Include="E:\Blazorex\src\Blazorex\.editorconfig" />
 	</ItemGroup>
 
 	<PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <EditorConfigFiles Remove="E:\Blazorex\src\Blazorex\.editorconfig" />
+	</ItemGroup>
 
 
 </Project>

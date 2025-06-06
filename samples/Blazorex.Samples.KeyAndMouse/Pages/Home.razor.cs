@@ -7,7 +7,6 @@ public partial class Home
 
     private const int CanvasWidth = 1024;
     private const int CanvasHeight = 768;
-    private const string BackgroundColor = "#fff";
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -41,11 +40,6 @@ public partial class Home
         if (_context is null)
             return;
 
-        // Clear canvas with dark background
-        _context.FillStyle = BackgroundColor;
-        _context.FillRect(0, 0, CanvasWidth, CanvasHeight);
-
-        // Update and render falling keys
         KeyRainEngine.UpdateAndRender(_context);
     }
 
