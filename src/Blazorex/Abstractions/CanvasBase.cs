@@ -25,12 +25,15 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
         if (!firstRender)
             return;
 
-        _module = await this.JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/Blazorex/blazorex.js");
-        _blazorexAPI = await _module.InvokeAsync<IJSObjectReference>("createBlazorexAPI");
+        this._module = await this.JSRuntime.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/Blazorex/blazorex.js"
+        );
+        this._blazorexAPI = await _module.InvokeAsync<IJSObjectReference>("createBlazorexAPI");
 
         var managedInstance = DotNetObjectReference.Create(this);
 
-        await _blazorexAPI.InvokeVoidAsync(
+        await this._blazorexAPI.InvokeVoidAsync(
             "initCanvas",
             this.Id,
             managedInstance,
@@ -45,7 +48,7 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
             }
         );
 
-        this.RenderContext = new RenderContext2D(this.Id, _blazorexAPI);
+        this.RenderContext = new RenderContext2D(this.Id, this._blazorexAPI);
 
         await this.OnCanvasReady.InvokeAsync(this);
     }
@@ -195,17 +198,17 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
     /// <param name="height">New canvas height</param>
     public void Resize(int width, int height)
     {
-        if (RenderContext == null)
+        if (this.RenderContext == null)
             throw new InvalidOperationException(
                 "Canvas not ready. Ensure OnCanvasReady has been called."
             );
 
         // Update the component properties
-        Width = width;
-        Height = height;
+        this.Width = width;
+        this.Height = height;
 
         // Trigger the resize operation
-        RenderContext.Resize(width, height);
+        this.RenderContext.Resize(width, height);
     }
 
     #endregion Public Methods
@@ -214,20 +217,20 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        if (!_disposed)
+        if (!this._disposed)
         {
-            if (_blazorexAPI != null)
+            if (this._blazorexAPI != null)
             {
-                await _blazorexAPI.InvokeVoidAsync("removeContext", Id);
-                await _blazorexAPI.DisposeAsync();
+                await this._blazorexAPI.InvokeVoidAsync("removeContext", Id);
+                await this._blazorexAPI.DisposeAsync();
             }
-            
+
             if (_module != null)
             {
-                await _module.DisposeAsync();
+                await this._module.DisposeAsync();
             }
-            
-            _disposed = true;
+
+            this._disposed = true;
         }
     }
 

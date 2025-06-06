@@ -22,14 +22,14 @@ internal sealed partial class RenderContext2D : IRenderContext
             );
         }
 
-        _id = id;
-        _blazorexAPI = blazorexAPI;
-        _marshalReferenceCache = new MarshalReferencePool();
+        this._id = id;
+        this._blazorexAPI = blazorexAPI;
+        this._marshalReferenceCache = new MarshalReferencePool();
     }
 
     internal void Call(string method, params object[] args) =>
-        _jsOps.Enqueue(JsOp.FunctionCall(method, args));
+        this._jsOps.Enqueue(JsOp.FunctionCall(method, args));
 
     private void SetProperty(string property, object value) =>
-        _jsOps.Enqueue(JsOp.PropertyCall(property, value));
+        this._jsOps.Enqueue(JsOp.PropertyCall(property, value));
 }

@@ -84,7 +84,7 @@ public interface IRenderContext
     /// <summary>
     /// Fills the given text at the specified position using the current <see cref="FillStyle"/>.
     /// </summary>
-    public void FillText(string text, float x, float y, float maxWidth);
+    void FillText(string text, float x, float y, float maxWidth);
 
     /// <summary>
     /// Measures the dimensions of the given text using the current font settings.
