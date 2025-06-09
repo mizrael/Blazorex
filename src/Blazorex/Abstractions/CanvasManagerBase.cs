@@ -6,8 +6,8 @@ namespace Blazorex.Abstractions;
 
 public abstract class CanvasManagerBase : ComponentBase
 {
-    protected readonly Dictionary<string, CanvasCreationOptions> _names = new();
-    protected readonly Dictionary<string, CanvasBase> _canvases = new();
+    protected readonly Dictionary<string, CanvasCreationOptions> _names = [];
+    protected readonly Dictionary<string, CanvasBase> _canvases = [];
 
     public void CreateCanvas(string name, CanvasCreationOptions options)
     {

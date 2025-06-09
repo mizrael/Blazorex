@@ -38,46 +38,46 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
     // ========================================
     // PRIVATE STATE MANAGEMENT
     // ========================================
-    
+
     /** Active canvas contexts indexed by canvas ID */
     const canvasContexts = new Map<string, ContextInfo>();
-    
+
     /** Cached DOM elements indexed by Blazor element reference ID */
     const elementCache = new Map<string, Element>();
-    
+
     /** 
      * Marshal references for complex canvas objects (gradients, patterns, etc.)
      * Maps C# MarshalReference.Id to the actual JavaScript canvas object
      */
     const marshalledObjects = new Map<number, unknown>();
-    
+
     /** ImageData objects indexed by auto-generated ID */
     const imageDataCache = new Map<number, ImageData>();
-    
+
     /** Currently held keyboard keys */
     const pressedKeys = new Set<number>();
-    
+
     /** Current state of modifier keys */
-    const modifierKeys: ModifierState = { 
-        shift: false, 
-        ctrl: false, 
-        alt: false, 
-        meta: false 
+    const modifierKeys: ModifierState = {
+        shift: false,
+        ctrl: false,
+        alt: false,
+        meta: false
     };
-    
+
     /** Auto-incrementing counter for ImageData IDs */
     let nextImageId = 0;
-    
+
     // Performance optimization: Pre-allocated context arrays
     let cachedContexts: ContextInfo[] = [];
     let keyboardEventContexts: ContextInfo[] = [];
     let mouseEventContexts: ContextInfo[] = [];
     let resizeEventContexts: ContextInfo[] = [];
-    
+
     // ========================================
     // EVENT EXTRACTION & MAPPING
     // ========================================
-    
+
     /** Extract relevant data from different event types */
     const eventDataExtractors: EventExtractors = {
         wheel: (event: WheelEvent): WheelEventData => ({
@@ -86,32 +86,32 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             clientX: event.clientX,
             clientY: event.clientY
         }),
-        
+
         mousedown: (event: MouseEvent): EventCoordinates => ({
             clientX: event.clientX,
             clientY: event.clientY,
             button: event.button
         }),
-        
+
         mouseup: (event: MouseEvent): EventCoordinates => ({
             clientX: event.clientX,
             clientY: event.clientY,
             button: event.button
         }),
-        
+
         touchstart: (event: TouchEvent): EventCoordinates => ({
             clientX: event.touches[0]?.clientX ?? 0,
             clientY: event.touches[0]?.clientY ?? 0,
             button: 0
         }),
-        
+
         touchend: (event: TouchEvent): EventCoordinates => ({
             clientX: event.changedTouches[0]?.clientX ?? 0,
             clientY: event.changedTouches[0]?.clientY ?? 0,
             button: 0
         })
     } as const;
-    
+
     /** Map event types to Blazor method names */
     const blazorMethodNames: EventMethodMap = {
         wheel: 'Wheel',
@@ -120,34 +120,34 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         touchstart: 'MouseDown', // Touch events map to mouse events
         touchend: 'MouseUp'
     } as const;
-    
+
     // ========================================
     // UTILITY FUNCTIONS
     // ========================================
-    
+
     /**
      * Determines if a parameter is a MarshalReference from C#
      */
     const isMarshalReference = (param: unknown): param is MarshalReference => {
-        return typeof param === 'object' && 
-               param !== null && 
-               'id' in param && 
-               'isElementRef' in param &&
-               typeof (param as any).id === 'number';
+        return typeof param === 'object' &&
+            param !== null &&
+            'id' in param &&
+            'isElementRef' in param &&
+            typeof (param as any).id === 'number';
     };
-    
+
     /**
      * Creates a strongly-typed event handler for canvas events
      */
     const createCanvasEventHandler = (
-        blazorInstance: DotNetObjectReference, 
+        blazorInstance: DotNetObjectReference,
         eventType: EventType
     ): EventHandler => {
         const methodName = blazorMethodNames[eventType];
-        
+
         return (domEvent: Event): void => {
             let eventData: EventCoordinates | WheelEventData;
-            
+
             switch (eventType) {
                 case 'wheel':
                     eventData = eventDataExtractors.wheel(domEvent as WheelEvent);
@@ -167,13 +167,13 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
                 default:
                     return;
             }
-            
+
             blazorInstance
                 .invokeMethodAsync(methodName, eventData)
                 .catch(error => console.error(`Failed to invoke ${methodName}:`, error));
         };
     };
-    
+
     /**
      * Updates the modifier key state from a keyboard event
      */
@@ -183,13 +183,13 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         modifierKeys.alt = event.altKey;
         modifierKeys.meta = event.metaKey;
     };
-    
+
     /**
      * Retrieves a cached DOM element by Blazor ElementRef
      */
     const getCachedElement = (elementRef: MarshalReference): Element | undefined => {
         const cacheKey = `_bl_${elementRef.id}`;
-        
+
         let element = elementCache.get(cacheKey);
         if (!element) {
             element = document.querySelector(`[${cacheKey}]`) ?? undefined;
@@ -197,10 +197,10 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
                 elementCache.set(cacheKey, element);
             }
         }
-        
+
         return element;
     };
-    
+
     /**
      * Unwraps property values that may come from Blazor in various formats
      * Handles: string, number, Date, objects with { value }, objects with { id }, objects with { result }
@@ -208,44 +208,44 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
     const unwrapPropertyValue = (value: PropertyValue): string | number | Date | unknown => {
         // Handle null/undefined
         if (value == null) return value;
-        
+
         // Handle primitive types directly
         if (typeof value === 'string' || typeof value === 'number') {
             return value;
         }
-        
+
         // Handle Date objects
         if (value instanceof Date) {
             return value;
         }
-        
+
         // Handle object wrappers
         if (typeof value === 'object') {
             const wrapper = value as PropertyValueWrapper;
-            
+
             // Check for value wrapper: { value: actualValue }
             if ('value' in wrapper) {
                 return wrapper.value;
             }
-            
+
             // Check for ID reference: { id: referenceId }
             if ('id' in wrapper) {
                 return wrapper.id;
             }
-            
+
             // Check for result wrapper: { result: actualValue }
             if ('result' in wrapper) {
                 return wrapper.result;
             }
-            
+
             // If it's an object but doesn't match our wrapper patterns, return as-is
             return value;
         }
-        
+
         // Fallback for any other types
         return value;
     };
-    
+
     /**
      * Updates all cached context arrays when contexts change
      */
@@ -255,13 +255,13 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         mouseEventContexts = allContexts;
         resizeEventContexts = allContexts;
     };
-    
+
     /**
      * Safely invokes a Blazor method with error handling
      */
     const safeInvokeBlazorMethod = async (
-        instance: DotNetObjectReference, 
-        methodName: string, 
+        instance: DotNetObjectReference,
+        methodName: string,
         ...args: unknown[]
     ): Promise<void> => {
         try {
@@ -270,51 +270,54 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             console.error(`Failed to invoke Blazor method '${methodName}':`, error);
         }
     };
-    
+
     // ========================================
     // CANVAS CONTEXT OPERATIONS
     // ========================================
-    
+
     /** Canvas properties that can reference marshalled objects (gradients/patterns) */
-    
+
     /**
      * Invokes a method on the canvas context with marshal reference support
      */
     const invokeContextMethod = (
-        context: CanvasRenderingContext2D, 
-        methodName: string, 
+        context: CanvasRenderingContext2D,
+        methodName: string,
         parameters?: unknown[]
     ): unknown => {
         const params = parameters ? [...parameters] : [];
         const typedContext = context as unknown as Record<string, Function>;
-        
+
         // Handle zero-parameter methods
         if (params.length === 0) {
             return typedContext[methodName]();
         }
-        
+
         const firstParam = params[0];
-        
+
         // Handle C# MarshalReference objects
         if (isMarshalReference(firstParam)) {
 
             const marshalRef = firstParam as MarshalReference;
-            
+
             if (!marshalRef.isElementRef) {
                 // This is a marshal object reference (gradient, pattern, etc.)
                 params.splice(0, 1);
-                
+
                 const existingObject = marshalledObjects.get(marshalRef.id) as Record<string, Function> | undefined;
+
                 if (existingObject?.[methodName]) {
+
                     if (marshalRef.classInitializer) {
                         const Constructor = (globalThis as any)[marshalRef.classInitializer];
                         existingObject[methodName](new Constructor(...params));
                     } else {
                         existingObject[methodName](...params);
                     }
-                    return;
+
+                    return marshalRef.id;
                 }
-                
+
                 // Create new marshal object and store it
                 const result = typedContext[methodName](...params);
                 marshalledObjects.set(marshalRef.id, result);
@@ -323,29 +326,29 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
 
             params[0] = getCachedElement(marshalRef);
         }
-        
-        
+
+
         const result = typedContext[methodName](...params);
-        
+
         // If this created a marshal object, store it
         if (isMarshalReference(firstParam) && !firstParam.isElementRef) {
             marshalledObjects.set(firstParam.id, result);
         }
-        
+
         return result;
     };
-    
+
     /**
      * Sets a property on the canvas context with type unwrapping
      */
     const setContextProperty = (
-        context: CanvasRenderingContext2D, 
-        propertyName: string, 
+        context: CanvasRenderingContext2D,
+        propertyName: string,
         value: PropertyValue
     ): void => {
         const unwrappedValue = unwrapPropertyValue(value);
         const typedContext = context as unknown as Record<string, unknown>;
-        
+
         // Special handling for properties that may reference gradients/patterns
         if (MARSHAL_REFERENCE_PROPERTIES.includes(propertyName as any)) {
             // Check if this is a marshal reference ID
@@ -359,32 +362,32 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             typedContext[propertyName] = unwrappedValue;
         }
     };
-    
+
     // ========================================
     // EVENT HANDLERS
     // ========================================
-    
+
     /** Reusable mouse coordinate buffer to avoid allocations */
-    const mouseCoordinateBuffer: MouseEventCoordinates = { 
-        clientX: 0, 
-        clientY: 0, 
-        offsetX: 0, 
-        offsetY: 0 
+    const mouseCoordinateBuffer: MouseEventCoordinates = {
+        clientX: 0,
+        clientY: 0,
+        offsetX: 0,
+        offsetY: 0
     };
-    
+
     /**
      * Handles global keyboard key release events
      */
     const handleGlobalKeyUp = (event: KeyboardEvent): void => {
         const { keyCode, key } = event;
         updateModifierKeyState(event);
-        
+
         if (keyboardEventContexts.length !== canvasContexts.size) {
             refreshContextCaches();
         }
-        
+
         pressedKeys.delete(keyCode);
-        
+
         const keyEventData: KeyEventData = {
             keyCode,
             key,
@@ -392,26 +395,26 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             heldKeys: Array.from(pressedKeys),
             modifiers: { ...modifierKeys }
         };
-        
+
         // Broadcast to all canvas contexts
         keyboardEventContexts.forEach(({ managedInstance }) => {
             safeInvokeBlazorMethod(managedInstance, 'KeyReleased', keyEventData);
         });
     };
-    
+
     /**
      * Handles global keyboard key press events
      */
     const handleGlobalKeyDown = (event: KeyboardEvent): void => {
         const { keyCode, key } = event;
         updateModifierKeyState(event);
-        
+
         if (keyboardEventContexts.length !== canvasContexts.size) {
             refreshContextCaches();
         }
-        
+
         pressedKeys.add(keyCode);
-        
+
         const keyEventData: KeyEventData = {
             keyCode,
             key,
@@ -419,12 +422,12 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             heldKeys: Array.from(pressedKeys),
             modifiers: { ...modifierKeys }
         };
-        
+
         // Broadcast key press to all contexts
         keyboardEventContexts.forEach(({ managedInstance }) => {
             safeInvokeBlazorMethod(managedInstance, 'KeyPressed', keyEventData);
         });
-        
+
         // Send additional KeyPress event for printable characters
         if (key.length === 1 || PRINTABLE_KEYS.includes(key)) {
             keyboardEventContexts.forEach(({ managedInstance }) => {
@@ -432,7 +435,7 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             });
         }
     };
-    
+
     /**
      * Handles global mouse movement events
      */
@@ -440,18 +443,18 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         if (mouseEventContexts.length !== canvasContexts.size) {
             refreshContextCaches();
         }
-        
+
         // Update reusable buffer to avoid object allocations
         mouseCoordinateBuffer.clientX = event.clientX;
         mouseCoordinateBuffer.clientY = event.clientY;
         mouseCoordinateBuffer.offsetX = event.offsetX;
         mouseCoordinateBuffer.offsetY = event.offsetY;
-        
+
         mouseEventContexts.forEach(({ managedInstance }) => {
             safeInvokeBlazorMethod(managedInstance, 'MouseMoved', mouseCoordinateBuffer);
         });
     };
-    
+
     /**
      * Handles global touch movement events (treats them as mouse moves)
      */
@@ -459,7 +462,7 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         if (mouseEventContexts.length !== canvasContexts.size) {
             refreshContextCaches();
         }
-        
+
         // Use first touch point and treat as mouse move
         const touch = event.touches[0];
         if (touch) {
@@ -468,13 +471,13 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             mouseCoordinateBuffer.clientY = touch.clientY;
             mouseCoordinateBuffer.offsetX = touch.clientX; // Touch events don't have offsetX/Y
             mouseCoordinateBuffer.offsetY = touch.clientY;
-            
+
             mouseEventContexts.forEach(({ managedInstance }) => {
                 safeInvokeBlazorMethod(managedInstance, 'MouseMoved', mouseCoordinateBuffer);
             });
         }
     };
-    
+
     /**
      * Handles global window resize events
      */
@@ -482,17 +485,17 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         if (resizeEventContexts.length !== canvasContexts.size) {
             refreshContextCaches();
         }
-        
+
         const { innerWidth, innerHeight } = window;
         resizeEventContexts.forEach(({ managedInstance }) => {
             safeInvokeBlazorMethod(managedInstance, 'Resized', innerWidth, innerHeight);
         });
     };
-    
+
     // ========================================
     // PUBLIC API IMPLEMENTATION
     // ========================================
-    
+
     /**
      * Initializes a canvas element with event handlers and context
      */
@@ -506,7 +509,7 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             console.warn(`Canvas element with ID '${canvasId}' not found`);
             return;
         }
-        
+
         // Create event handlers for this canvas
         const eventHandlers = {
             wheel: createCanvasEventHandler(blazorInstance, 'wheel'),
@@ -515,20 +518,20 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             touchstart: createCanvasEventHandler(blazorInstance, 'touchstart'),
             touchend: createCanvasEventHandler(blazorInstance, 'touchend')
         } as const;
-        
+
         // Attach event listeners with non-passive mode for performance
         const eventOptions: AddEventListenerOptions = { passive: false };
         Object.entries(eventHandlers).forEach(([eventType, handler]) => {
             canvas.addEventListener(eventType, handler, eventOptions);
         });
-        
+
         // Get 2D rendering context
         const renderingContext = canvas.getContext('2d', contextOptions);
         if (!renderingContext) {
             console.error(`Failed to get 2D rendering context for canvas '${canvasId}'`);
             return;
         }
-        
+
         // Store context info
         canvasContexts.set(canvasId, {
             id: canvasId,
@@ -539,7 +542,7 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
 
         requestAnimationFrame(onFrameUpdate);
     };
-    
+
     /**
      * Handles frame update loop with RequestAnimationFrame
      */
@@ -548,16 +551,16 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         if (cachedContexts.length !== canvasContexts.size) {
             cachedContexts = Array.from(canvasContexts.values());
         }
-        
+
         // Notify all contexts of frame update
         cachedContexts.forEach(({ managedInstance }) => {
             safeInvokeBlazorMethod(managedInstance, 'UpdateFrame', timestamp);
         });
-        
+
         // Schedule next frame
         requestAnimationFrame(onFrameUpdate);
     };
-    
+
     /**
      * Creates a new ImageData object and returns its ID
      */
@@ -567,49 +570,49 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             console.warn(`Canvas context '${canvasId}' not found`);
             return null;
         }
-        
+
         const imageData = contextInfo.context.createImageData(width, height);
         const imageId = nextImageId++;
         imageDataCache.set(imageId, imageData);
         return imageId;
     };
-    
+
     /**
      * Updates ImageData with new pixel data and renders to canvas
      */
     const putImageData = (
-        canvasId: string, 
-        imageId: number, 
-        pixelData: Uint8ClampedArray, 
-        x: number, 
+        canvasId: string,
+        imageId: number,
+        pixelData: Uint8ClampedArray,
+        x: number,
         y: number
     ): void => {
         const contextInfo = canvasContexts.get(canvasId);
         const imageData = imageDataCache.get(imageId);
-        
+
         if (!contextInfo || !imageData) {
             console.warn(`Invalid canvas '${canvasId}' or image '${imageId}'`);
             return;
         }
-        
+
         imageData.data.set(pixelData);
         contextInfo.context.putImageData(imageData, x, y);
     };
-    
+
     /**
      * Processes a batch of canvas operations efficiently
      */
     const processBatch = (canvasId: string, operations: readonly BatchOperation[]): void => {
         if (!operations?.length) return;
-        
+
         const contextInfo = canvasContexts.get(canvasId);
         if (!contextInfo) {
             console.warn(`Canvas context '${canvasId}' not found`);
             return;
         }
-        
+
         const { context } = contextInfo;
-        
+
         // Process all operations in sequence
         operations.forEach(({ methodName, args, isProperty }) => {
             if (isProperty) {
@@ -619,13 +622,13 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             }
         });
     };
-    
+
     /**
      * Directly calls a single method on the canvas context
      */
     const directCall = (
-        canvasId: string, 
-        methodName: string, 
+        canvasId: string,
+        methodName: string,
         parameters?: unknown[]
     ): unknown => {
         const contextInfo = canvasContexts.get(canvasId);
@@ -633,33 +636,33 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             console.warn(`Canvas context '${canvasId}' not found`);
             return null;
         }
-        
+
         return invokeContextMethod(contextInfo.context, methodName, parameters);
     };
-    
+
     /**
      * Removes a canvas context and cleans up resources
      */
     const removeContext = (canvasId: string): boolean => {
         return canvasContexts.delete(canvasId);
     };
-    
+
     /**
      * Resizes a canvas and notifies Blazor of the change
      */
     const resizeCanvas = (canvasId: string, width: number, height: number): void => {
         const contextInfo = canvasContexts.get(canvasId);
         const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
-        
+
         if (!contextInfo || !canvas) {
             console.warn(`Canvas '${canvasId}' not found for resize operation`);
             return;
         }
-        
+
         // Update canvas dimensions (triggers context reset)
         canvas.width = width;
         canvas.height = height;
-        
+
         // Re-acquire context with original options
         const newContext = canvas.getContext('2d', contextInfo.contextOptions);
         if (newContext) {
@@ -667,24 +670,69 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
             safeInvokeBlazorMethod(contextInfo.managedInstance, 'Resized', width, height);
         }
     };
-    
+
+    /**
+     * Converts a canvas to a Blob and returns it as a format compatible with the C# Blob implementation
+     */
+    const toBlob = async (
+        canvasId: string,
+        type: string = 'image/png',
+        quality?: number
+    ): Promise<{ data: Uint8Array; type: string; size: number, objectUrl: string } | null> => {
+        const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
+
+        if (!canvas) {
+            console.warn(`Canvas '${canvasId}' not found for toBlob operation`);
+            return null;
+        }
+
+        return new Promise((resolve) => {
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    console.warn(`Failed to create blob from canvas '${canvasId}'`);
+                    resolve(null);
+                    return;
+                }
+
+                try {
+                    // Convert blob to ArrayBuffer then to Uint8Array for C# interop
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    const objectUrl = URL.createObjectURL(blob)
+
+                    // Return object that matches C# Blob constructor expectations
+                    resolve({
+                        data: uint8Array,
+                        type: blob.type,
+                        size: blob.size,
+                        objectUrl: objectUrl
+                    });
+
+                } catch (error) {
+                    console.error(`Error converting canvas '${canvasId}' to blob:`, error);
+                    resolve(null);
+                }
+            }, type, quality);
+        });
+    };
+
     // ========================================
     // GLOBAL EVENT SETUP
     // ========================================
-    
+
     // Set up global event listeners with passive mode for better performance
     const globalEventOptions: AddEventListenerOptions = { passive: true };
-    
+
     addEventListener('keyup', handleGlobalKeyUp, globalEventOptions);
     addEventListener('keydown', handleGlobalKeyDown, globalEventOptions);
     addEventListener('mousemove', handleGlobalMouseMove, globalEventOptions);
     addEventListener('touchmove', handleGlobalTouchMove, globalEventOptions);
     addEventListener('resize', handleGlobalResize, globalEventOptions);
-    
+
     // ========================================
     // API EXPORT
     // ========================================
-    
+
     return Object.freeze({
         initCanvas,
         onFrameUpdate,
@@ -693,7 +741,8 @@ export const createBlazorexAPI: CreateBlazorexAPI = (): BlazorexAPI => {
         processBatch,
         directCall,
         removeContext,
-        resizeCanvas
+        resizeCanvas,
+        toBlob
     });
 };
 

@@ -104,6 +104,7 @@ export type BlazorexAPI = {
     readonly directCall: (ctxId: string, methodName: string, jParams?: unknown[]) => unknown;
     readonly removeContext: (ctxId: string) => boolean;
     readonly resizeCanvas: (ctxId: string, width: number, height: number) => void;
+    readonly toBlob: (ctxId: string, type: string, quality?: number) => Promise<{ data: Uint8Array; type: string; size: number, objectUrl: string } | null>;
 };
 
 export type CreateBlazorexAPI = () => BlazorexAPI; 

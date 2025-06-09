@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Blazorex.Renderer;
 using Microsoft.AspNetCore.Components;
@@ -29,6 +30,7 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
             "import",
             "./_content/Blazorex/blazorex.js"
         );
+
         this._blazorexAPI = await _module.InvokeAsync<IJSObjectReference>("createBlazorexAPI");
 
         var managedInstance = DotNetObjectReference.Create(this);
@@ -209,6 +211,72 @@ public abstract class CanvasBase : ComponentBase, IAsyncDisposable
 
         // Trigger the resize operation
         this.RenderContext.Resize(width, height);
+    }
+
+    /// <summary>
+    /// Converts canvas to blob.
+    /// Docs: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
+    /// </summary>
+    public async ValueTask<Blob> ToBlob(
+        string type = "image/png",
+        double? quality = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        var blobData = quality.HasValue
+            ? await _blazorexAPI.InvokeAsync<BlobData>(
+                "toBlob",
+                cancellationToken,
+                Id,
+                type,
+                quality.Value
+            )
+            : await _blazorexAPI.InvokeAsync<BlobData>("toBlob", cancellationToken, Id, type);
+
+        return blobData.ToBlob();
+    }
+
+    /// <summary>
+    /// Converts canvas to blob and invokes callback (fire-and-forget pattern).
+    /// Docs: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
+    /// </summary>
+    public void ToBlob(Action<Blob> callback, string type = "image/png", double? quality = null) =>
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                using var blob = await ToBlob(type, quality);
+                callback(blob);
+            }
+            catch { }
+        });
+
+    /// <summary>
+    /// Converts canvas to data URL.
+    /// Docs:https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toDataURL
+    /// </summary>
+    public async ValueTask<string> ToDataUrl(
+        string type = "image/png",
+        double? quality = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using var blob = await ToBlob(type, quality, cancellationToken);
+        return blob.ToDataUrl();
+    }
+
+    /// <summary>
+    /// Converts canvas to object URL for direct browser usage.
+    /// Docs: https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL_static
+    /// </summary>
+    public async ValueTask<string> CreateObjectURL(
+        string type = "image/png",
+        double? quality = null,
+        CancellationToken cancellationToken = default
+    )
+    {
+        using var blob = await ToBlob(type, quality, cancellationToken);
+        return blob.ObjectUrl;
     }
 
     #endregion Public Methods

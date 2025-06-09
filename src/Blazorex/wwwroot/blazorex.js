@@ -168,7 +168,7 @@ export const createBlazorexAPI = () => {
                     else {
                         existingObject[methodName](...params);
                     }
-                    return;
+                    return marshalRef.id;
                 }
                 const result = typedContext[methodName](...params);
                 marshalledObjects.set(marshalRef.id, result);
@@ -385,6 +385,37 @@ export const createBlazorexAPI = () => {
             safeInvokeBlazorMethod(contextInfo.managedInstance, 'Resized', width, height);
         }
     };
+    const toBlob = async (canvasId, type = 'image/png', quality) => {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) {
+            console.warn(`Canvas '${canvasId}' not found for toBlob operation`);
+            return null;
+        }
+        return new Promise((resolve) => {
+            canvas.toBlob(async (blob) => {
+                if (!blob) {
+                    console.warn(`Failed to create blob from canvas '${canvasId}'`);
+                    resolve(null);
+                    return;
+                }
+                try {
+                    const arrayBuffer = await blob.arrayBuffer();
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    const objectUrl = URL.createObjectURL(blob);
+                    resolve({
+                        data: uint8Array,
+                        type: blob.type,
+                        size: blob.size,
+                        objectUrl: objectUrl
+                    });
+                }
+                catch (error) {
+                    console.error(`Error converting canvas '${canvasId}' to blob:`, error);
+                    resolve(null);
+                }
+            }, type, quality);
+        });
+    };
     const globalEventOptions = { passive: true };
     addEventListener('keyup', handleGlobalKeyUp, globalEventOptions);
     addEventListener('keydown', handleGlobalKeyDown, globalEventOptions);
@@ -399,7 +430,8 @@ export const createBlazorexAPI = () => {
         processBatch,
         directCall,
         removeContext,
-        resizeCanvas
+        resizeCanvas,
+        toBlob
     });
 };
 export default createBlazorexAPI;
