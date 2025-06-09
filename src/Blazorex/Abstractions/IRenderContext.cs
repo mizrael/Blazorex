@@ -69,12 +69,22 @@ public interface IRenderContext
     /// <summary>
     /// Strokes (outlines) the given text at the specified position.
     /// </summary>
-    void StrokeText(string text, float x, float y, float? maxWidth = null);
+    void StrokeText(string text, float x, float y);
+
+    /// <summary>
+    /// Strokes (outlines) the given text at the specified position.
+    /// </summary>
+    void StrokeText(string text, float x, float y, float maxWidth);
 
     /// <summary>
     /// Fills the given text at the specified position using the current <see cref="FillStyle"/>.
     /// </summary>
-    void FillText(string text, float x, float y, float? maxWidth = null);
+    void FillText(string text, float x, float y);
+
+    /// <summary>
+    /// Fills the given text at the specified position using the current <see cref="FillStyle"/>.
+    /// </summary>
+    void FillText(string text, float x, float y, float maxWidth);
 
     /// <summary>
     /// Measures the dimensions of the given text using the current font settings.

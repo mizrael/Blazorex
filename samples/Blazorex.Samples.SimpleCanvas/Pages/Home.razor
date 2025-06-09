@@ -4,13 +4,36 @@
 
 <img @ref="_spritesheet" hidden src="blazor.png" />
 
-<CanvasManager @ref="_canvasManager" />
+
+<div class="container mx-auto">
+    <div class="d-flex justify-content-center gap-5">
+        <div>
+            <CanvasManager @ref="_canvasManager" />
+        </div>
+        <div class="w-50 h-50">
+            <div class="p-5 border-1 shadow bg-light rounded d-flex flex-column gap-3 justify-content-center align-content-center">
+                @if (!string.IsNullOrEmpty(this.blobUrl))
+                {
+                    <img class="w-100 d-block mx-auto" src="@this.blobUrl" />
+                } else
+                {
+                    <div style="height: 264px;" class="w-100 d-block mx-auto bg-primary"></div>
+                }
+                <div class=" d-flex flex-column text-center gap-2">
+                    <button class="btn btn-primary" @onclick="() => this.GetBlobDataURL()">Take Screenshot</button>
+                    <small class="text-muted">Uses the <kbd>.ToObjectUrl</kbd> Method</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @code
 {
     CanvasManager _canvasManager;
     ElementReference _spritesheet;
     IRenderContext _context;
+    CanvasBase _canvas;
 
     int _width = 800;
     int _height = 600;
@@ -29,24 +52,29 @@
     float _lastUpdate = 0;
     float _elapsedTime = 0;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    string blobUrl = string.Empty;
+
+    protected override void OnAfterRender(bool firstRender)
     {
         if (!firstRender)
+        {
             return;
+        }
 
         _canvasManager.CreateCanvas("main", new CanvasCreationOptions()
-        {
-            Hidden = false,
-            Width = _width,
-            Height = _height,
-            OnCanvasReady = this.OnMainCanvasReady,
-            OnFrameReady = this.OnMainFrameReady,
-            OnResize = this.OnMainCanvasResize,
-        });
+            {
+                Hidden = false,
+                Width = _width,
+                Height = _height,
+                OnCanvasReady = this.OnMainCanvasReady,
+                OnFrameReady = this.OnMainFrameReady,
+                OnResize = this.OnMainCanvasResize,
+            });
     }
 
     private void OnMainCanvasReady(CanvasBase canvas)
     {
+        _canvas = canvas;
         _context = canvas.RenderContext;
     }
 
@@ -59,6 +87,11 @@
     private void OnMainCanvasResize(Size windowSize)
     {
 
+    }
+
+    private async ValueTask GetBlobDataURL()
+    {
+        this.blobUrl = await this._canvas.ToObjectUrl("image/png");
     }
 
     private void Update(float timeStamp)
@@ -106,7 +139,7 @@
         // reset composite operation to default
         _context.GlobalCompositeOperation = GlobalCompositeOperation.SourceOver;
 
-                // draws a yellow border around the sprite
+        // draws a yellow border around the sprite
         // _context.Filter = Filter.Blur(2);
         _context.StrokeStyle = "rgb(255, 255,0)";
         _context.LineWidth = 3;
